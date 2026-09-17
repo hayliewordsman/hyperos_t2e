@@ -99,20 +99,59 @@ adb shell setprop ro.surface_flinger.supports_background_blur 1
 adb shell stop && adb shell start
 ```
 
-## Getting it onto the phone, eventually
+## Producing the flashable image
 
-The image built above can be fed straight to the injection tool, which adds the
-keyboard and sets the blur property inside the image:
+This is the canonical invocation. It adds the keyboard, enables blur, and
+applies the ADB hardening from `security-posture.md` in one pass. Other
+documents reference this section rather than repeating the flags, so there is
+one copy to keep correct.
 
 ```bash
 tools/inject-ime.sh \
-  --image out/target/product/*/system.img \
-  --apk prebuilts/pastiera/pastiera-nightly-*.apk \
-  --out system-facet.img \
-  --name Pastiera \
+  --image  out/target/product/*/system.img \
+  --apk    prebuilts/pastiera/pastiera-nightly-0.86-nightly.20260820.222455.apk \
+  --out    system-facet-hardened.img \
+  --name   Pastiera \
   --ime-id it.palsoftware.pastiera.nightly/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService \
-  --set-prop ro.surface_flinger.supports_background_blur=1
+  --set-prop ro.surface_flinger.supports_background_blur=1 \
+  --set-prop ro.adb.secure=1 \
+  --set-prop ro.debuggable=0
 ```
 
-Then follow `day-one.md` — in particular, take the stock backup **before**
-flashing anything, because no public Titan 2 Elite firmware exists to restore.
+The same command works on a downloaded /e/OS GSI; only `--image` changes.
+
+| Flag | Why |
+|---|---|
+| `ro.surface_flinger.supports_background_blur=1` | Without it SurfaceFlinger does no cross-window blur and the glass design collapses to flat translucency |
+| `ro.adb.secure=1` | The GSI ships this as `0`, which disables ADB authorisation entirely — any USB host can connect |
+| `ro.debuggable=0` | The GSI ships `1`, which allows `adb root` |
+
+Read `--ime-id` out of whichever APK you are shipping rather than copying it:
+`python3 tools/axml.py <apk>`. Pastiera's nightly keeps its IME class in the
+non-nightly namespace, so the short form silently resolves to nothing.
+
+### Verified on the /e/OS Android 16 image
+
+Each property appears **exactly once** afterwards. `ro.adb.secure` and
+`ro.debuggable` already existed, so they are replaced in place rather than
+appended — a duplicate line would leave Android resolving between two
+conflicting values. The file grew 214 → 215 lines: two replacements, one
+addition. `build.prop` keeps its original mode and SELinux label, the APK comes
+back byte-identical, and `e2fsck` is clean.
+
+### Confirm on the device
+
+```bash
+adb shell getprop ro.adb.secure ro.debuggable \
+                  ro.surface_flinger.supports_background_blur
+```
+
+Then try connecting from an unauthorised host. **If ADB attaches without
+prompting, the hardening did not take effect** and the exposure is still open.
+
+None of this has been tested on hardware.
+
+## Getting it onto the phone, eventually
+
+Follow `day-one.md` — in particular, take the stock backup **before** flashing
+anything, because no public Titan 2 Elite firmware exists to restore.

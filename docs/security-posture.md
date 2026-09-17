@@ -71,19 +71,28 @@ control here, and it matters more than every other item on this page combined.
 
 ## Hardening you can apply
 
-The injection tool sets properties, so these can go straight into the image:
+Two properties close the worst of the above, and the injection tool writes them
+into the image:
 
-```bash
-tools/inject-ime.sh --image system.img ... \
-  --set-prop ro.adb.secure=1 \
-  --set-prop ro.debuggable=0
-```
+| Property | Ships as | Set to | Effect |
+|---|---|---|---|
+| `ro.adb.secure` | `0` | `1` | ADB requires the on-device authorisation prompt again |
+| `ro.debuggable` | `1` | `0` | removes `adb root` |
 
-That restores ADB authorisation and removes `adb root`. **Caveats:** the build is
-still `userdebug` underneath and some components check `ro.build.type` directly,
-so this narrows the exposure rather than eliminating it, and it has not been
-tested on a device. Verify with `adb shell getprop` after flashing, and confirm
-ADB actually prompts before trusting it.
+The full command lives in **[building.md](building.md#producing-the-flashable-image)**
+so there is only one copy to keep correct.
+
+**Caveats.** The build is still `userdebug` underneath — `ro.build.type` is
+unchanged, and components that check it directly rather than reading
+`ro.debuggable` will still behave as a development build. This narrows the
+exposure; it does not convert the image into a user build. It has not been
+tested on hardware, so verify with `getprop` after flashing and confirm ADB
+actually prompts before trusting it.
+
+Deliberately left alone: `persist.sys.usb.config=adb`. Setting it to `none`
+would disable ADB at boot entirely, but that removes the recovery path if the
+first-boot IME hook fails, since `adb shell ime set` is the documented fallback.
+Worth doing once the device is set up and known-good.
 
 Also worth doing:
 
