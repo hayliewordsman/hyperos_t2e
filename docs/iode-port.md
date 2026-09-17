@@ -98,3 +98,59 @@ These findings are ROM-agnostic and still apply.
    and confirm its filesystem, arch and A/B variant.
 2. Run `tools/inject-ime.sh` against it with the archived Pastiera APK.
 3. Everything else waits on hardware — see `day-one.md`.
+
+## The iodéOS GSI, inspected
+
+`iode-5.27-20260827-arm64_ab.img.xz` — 1,132,205,824 bytes, SHA-256 verified
+against the published checksum (iodé also ships a minisign `.minisig`).
+Decompresses to 3,218,706,432 bytes.
+
+| Property | Value |
+|---|---|
+| Filesystem | ext4, nested under `/system` — the layout `inject-ime.sh` already handles |
+| Base | phh/TrebleDroid (`# from device/phh/treble/system.prop`), LineageOS-derived |
+| Fingerprint | `google/lineage_arm64_ab/tdgsi_arm64_ab:14/AP2A.240905.003/…` |
+| iodé version | `5.27-20260827-arm64_ab` |
+| **Android version** | **14** |
+| Security patch | 2026-08-01 |
+| SystemUI | `/system/system_ext/priv-app/SystemUI` |
+| Overlay directory | `/system/product/overlay` — exists, already populated |
+
+The good news is that this is genuinely vendor-neutral. It is a TrebleDroid build
+with no QSSI lineage and none of the Qualcomm HAL demands that made the HyperOS
+image a dead end.
+
+### The problem: it is Android 14
+
+Treble's compatibility contract runs **forward**, not backward. A vendor
+implementation is supported with a system image of the **same or newer** Android
+version. An Android 14 GSI on an Android 15 or 16 vendor is the unsupported
+direction.
+
+The Titan 2 Elite is a 2026 device and will almost certainly ship Android 15 or
+16. iodé currently publishes **only** Android 14 GSIs — `5.26` and `5.27` are the
+entire `gsi/` directory.
+
+So the iodé GSI as it stands is likely the wrong way round for this device. Three
+ways out, to be decided when the device's actual Android version is known:
+
+1. **Wait** for iodé to publish an Android 15/16 GSI.
+2. **Use a TrebleDroid or LineageOS GSI at Android 15/16.** Architecturally the
+   same base as iodé, minus iodé's privacy stack.
+3. **Build one**, which needs no device tree for a GSI target, only the
+   infrastructure described above.
+
+Confirm the device's shipped Android version with `collect-device-info.sh` before
+committing to any GSI.
+
+### What this means for theming
+
+- `/system/product/overlay` exists and already carries RRO overlays, so dropping
+  an overlay APK there is a precedented operation, mechanically identical to what
+  `inject-ime.sh` already does for the IME.
+- `ro.surface_flinger.supports_background_blur` is **not set** by this GSI, and
+  the image sets almost nothing SurfaceFlinger-related. That property is normally
+  vendor-side, so whether real background blur is available is determined by the
+  **device**, not by the GSI. It cannot be settled until the hardware exists.
+  Without it, translucency renders flat and a glass treatment loses most of its
+  effect.
