@@ -177,22 +177,27 @@ Licence texts are in `third_party/licenses/` in the Pastiera repository.
 
 ## 7. What this document does **not** make lawful
 
-**This covers Pastiera only.** The image is overwhelmingly HyperOS, which is
-Xiaomi proprietary software. Nothing here grants any right to redistribute it —
-a GPL compliance document does not address, and cannot cure, the separate
-question of redistributing Xiaomi's copyrighted code. Publishing a HyperOS image
-is a copyright matter between you and Xiaomi, and the practical risk is a
-takedown.
+**This covers Pastiera only.** The image also contains everything else in the
+GSI, under its own terms.
+
+With an **iodéOS** base this is comparatively simple: iodéOS is LineageOS-derived
+free software, so redistributing a built image is legitimate, provided you carry
+its licences and honour the same GPL source obligations for the components that
+carry them. Check iodé's own licensing and any trademark terms before publishing
+under their name.
+
+This was **not** true of the HyperOS base previously considered, which was
+Xiaomi's proprietary code and could not lawfully be redistributed at all. Moving
+to an open-source base removes that problem entirely.
 
 Two related points:
 
 - **Aggregation.** Placing a GPLv3 APK beside other programs in a filesystem
-  image is mere aggregation under GPLv3 §5. It does **not** place HyperOS under
-  the GPL. The problem with redistributing HyperOS is Xiaomi's own copyright,
-  not a GPL obligation.
+  image is mere aggregation under GPLv3 §5. It does not place the rest of the
+  image under the GPL.
 - **This repository's tooling** (`inject-ime.sh`, `axml.py`, the generated init
-  hook and setup script) is original work that merely installs Pastiera. It is
-  not a derivative of it, and carries whatever licence you choose for this repo.
+  hook and setup script) is original work that merely installs an IME. It is not
+  a derivative of it, and carries whatever licence you choose for this repo.
 
 Flashing an image to a phone you own is not conveying, and triggers none of this.
 Every obligation above begins the moment you hand the image to someone else.
@@ -204,8 +209,8 @@ you convey no GPL work, and none of §§2–6 applies. Each user fetches Pastier
 themselves from `https://pastiera.eu/` and runs `inject-ime.sh` locally, which
 takes about ten minutes.
 
-This also sidesteps §7 entirely, since you would not be redistributing HyperOS
-either. **For a public release this is the recommended route by a wide margin.**
+It also keeps §7 trivial, since you would be distributing no one else's binaries
+at all. **For a public release this remains the simplest route.**
 
 ## 9. Before you publish — checklist
 

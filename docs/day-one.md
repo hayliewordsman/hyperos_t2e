@@ -62,8 +62,9 @@ Everything below follows from that.
   The nightly's applicationId and its IME class live in *different* namespaces —
   guessing gets you a keyboard that silently never activates.
 
-- **The GSI.** `Hyperos-pudding-16-OS3.0.50.2.W` was current in January 2026.
-  Check for a newer HyperOS 3 build; the tool does not care which you use.
+- **The GSI.** Fetch a current iodéOS GSI from
+  `https://gitlab.iode.tech/ota/release/-/tree/master/gsi`. The tool does not
+  care which GSI you use, only that it is arm64 and matches your A/B layout.
 
 - **Both URLs**, which may have moved. The reproduction recipe in `gsi-port.md`
   has the exact paths that worked.
@@ -71,7 +72,7 @@ Everything below follows from that.
 ## What was never verified
 
 Everything in this repo was validated against images, not hardware. Specifically
-unverified: that HyperOS boots at all on Dimensity 7400 vendor, that the
+unverified: that the chosen GSI boots at all on Dimensity 7400 vendor, that the
 first-boot IME hook survives SELinux enforcement, and that Pastiera behaves
 correctly on Titan 2 **Elite** keys — its device assets name the Titan 2, and
 0.85's notes mention "Titan 2 Elite QWERTY", but nobody has run it on one.
