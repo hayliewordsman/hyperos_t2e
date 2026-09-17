@@ -21,7 +21,7 @@ built and verified against images and source, not a running device.
 | IME injection | **Working**, verified on the real /e/OS image: files labelled, APK byte-identical, `e2fsck` clean |
 | `build.prop` editing | **Working** — blur + ADB hardening props, verified in-image on /e/OS |
 | Security posture | Reviewed: the GSI ships `ro.adb.secure=0`; hardening applied, **unverified on device** |
-| Facet overlay (Tier 2) | Written; every overridden resource verified to exist upstream |
+| Facet overlay (Tier 2) | **Built and injected** — 11 + 1 resources, verified in-image; enablement untested on device |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
 | Facet patch `0002` (rim darkening) | Applies cleanly, effect measured; **never compiled** |
 | Build + emulator guide | Written |

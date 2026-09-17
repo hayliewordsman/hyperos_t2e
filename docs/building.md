@@ -156,6 +156,48 @@ tools/inject-ime.sh \
 
 The same command works on a downloaded /e/OS GSI; only `--image` changes.
 
+### Adding Facet Tier 2, with no source build
+
+The RRO overlays are APKs, so they inject like any other file. This produces a
+complete Tier 2 image from the **prebuilt** /e/OS GSI:
+
+```bash
+overlay/build.sh                       # needs ANDROID_JAR, KEYSTORE, KEYSTORE_PASS
+
+tools/inject-ime.sh \
+  --image  v4.3-a16-20260821-microG-gsi.img \
+  --apk    prebuilts/pastiera/pastiera-nightly-0.86-nightly.20260820.222455.apk \
+  --out    eos-facet-tier2.img \
+  --name   Pastiera \
+  --ime-id it.palsoftware.pastiera.nightly/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService \
+  --add-file overlay/out/FacetSystemUI.apk:product/overlay/FacetSystemUI.apk \
+  --add-file overlay/out/FacetFramework.apk:product/overlay/FacetFramework.apk \
+  --set-prop ro.surface_flinger.supports_background_blur=1 \
+  --set-prop ro.adb.secure=1 \
+  --set-prop ro.debuggable=0
+```
+
+This has been run. Five files inject and verify, both overlays come back
+byte-identical with their 11 and 1 resources intact, all three properties appear
+exactly once, `e2fsck` is clean. Nine seconds.
+
+**It gets the resource half of Facet only** — blur radii, tint, the enabling
+flags. The edge highlight and rim darkening are shaders in SystemUI source and
+need the full build below.
+
+**Enablement is unverified.** `android:isStatic` is deprecated on modern Android,
+so an overlay in `/product/overlay` may need enabling explicitly:
+
+```bash
+adb shell cmd overlay list | grep -i facet
+adb shell cmd overlay enable dev.titan2e.facet.systemui
+adb shell cmd overlay enable dev.titan2e.facet.framework
+```
+
+The overlays are also signed with a self-generated key rather than the platform
+key. Being on a trusted partition should be enough, but that has not been tested
+on a device.
+
 | Flag | Why |
 |---|---|
 | `ro.surface_flinger.supports_background_blur=1` | Without it SurfaceFlinger does no cross-window blur and the glass design collapses to flat translucency |

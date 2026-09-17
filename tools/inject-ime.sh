@@ -11,6 +11,10 @@
 #   Properties are not resources, so an RRO overlay cannot deliver them.
 #   Notably:  --set-prop ro.surface_flinger.supports_background_blur=1
 #
+# --add-file SRC:DEST   copies an extra file in, DEST relative to the system
+#   partition root. Repeatable. Used for RRO overlays, e.g.
+#   --add-file out/FacetSystemUI.apk:product/overlay/FacetSystemUI.apk
+#
 # Handles Android sparse and raw images. Supports both filesystems GSIs ship:
 #   ext4  - modified in place with debugfs (no mount, no e2fsdroid needed)
 #   erofs - unpacked and repacked, relabelled from plat_file_contexts
@@ -24,6 +28,7 @@ set -euo pipefail
 IME_ID="it.palsoftware.pastiera/.inputmethod.PhysicalKeyboardInputMethodService"
 APP_NAME=
 PROPS=()
+ADD_FILES=()
 DEFAULT_LABEL="u:object_r:system_file:s0"
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -40,6 +45,9 @@ while [[ $# -gt 0 ]]; do
     --set-prop)
       [[ "$2" == *=* ]] || die "--set-prop expects KEY=VALUE, got: $2"
       PROPS+=("$2"); shift 2 ;;
+    --add-file)
+      [[ "$2" == *:* ]] || die "--add-file expects SRC:DEST, got: $2"
+      ADD_FILES+=("$2"); shift 2 ;;
     --keep-tree) KEEP_TREE="$2"; shift 2 ;;
     -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
@@ -116,6 +124,17 @@ PAYLOAD=(
   "bin/default-ime-setup.sh:$STAGE/default-ime-setup.sh:0100755"
   "etc/init/default-ime.rc:$STAGE/default-ime.rc:0100644"
 )
+
+# Extra files requested with --add-file, appended to the same payload so they
+# get identical treatment: ownership, mode, SELinux label and verification.
+for spec in ${ADD_FILES+"${ADD_FILES[@]}"}; do
+  src="${spec%%:*}"
+  dest="${spec#*:}"
+  [[ -f "$src" ]] || die "--add-file source does not exist: $src"
+  dest="${dest#/}"
+  cp "$src" "$STAGE/$(basename "$dest")"
+  PAYLOAD+=("${dest}:$STAGE/$(basename "$dest"):0100644")
+done
 
 # --- 1. sparse -> raw -------------------------------------------------------
 magic4() { od -An -tx4 -N4 -j"${2:-0}" "$1" | tr -d ' \n'; }
