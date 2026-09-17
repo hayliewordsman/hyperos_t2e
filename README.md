@@ -19,7 +19,8 @@ built and verified against images and source, not a running device.
 |---|---|
 | GSI base | **/e/OS 4.3, Android 16** — downloaded, inspected, adopted |
 | IME injection | **Working**, verified on the real /e/OS image: files labelled, APK byte-identical, `e2fsck` clean |
-| `build.prop` editing | **Working** — sets the blur property inside the image |
+| `build.prop` editing | **Working** — blur + ADB hardening props, verified in-image on /e/OS |
+| Security posture | Reviewed: the GSI ships `ro.adb.secure=0`; hardening applied, **unverified on device** |
 | Facet overlay (Tier 2) | Written; every overridden resource verified to exist upstream |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
 | Facet patch `0002` (rim darkening) | Applies cleanly, effect measured; **never compiled** |
@@ -82,10 +83,11 @@ against 0.0000 at the centre. See [docs/preview/](docs/preview/).
 
 ## Open items
 
-- [ ] **Compile something.** Nothing here has been built; that is the largest untested surface
+- [ ] **Compile something.** Nothing here has been built; that is the largest untested surface, and it needs ~300 GB but no phone — see [docs/building.md](docs/building.md)
 - [ ] Device arrives → `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
-- [ ] Apply the ADB hardening props (`ro.adb.secure=1`, `ro.debuggable=0`) and verify on device
+- [x] Apply the ADB hardening props — done, each verified present exactly once in the image
+- [ ] Confirm the hardening **on device**: if ADB attaches from an unauthorised host without prompting, it did not take effect
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
 
 ## Worth considering before you flash
