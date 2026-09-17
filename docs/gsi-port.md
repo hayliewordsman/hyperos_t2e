@@ -83,6 +83,34 @@ Those tests caught four real bugs:
 `Hyperos-pudding-16-OS3.0.50.2.W-AB-20260122-MysticGSI.zip` was downloaded
 (3.99 GB, exact size match), extracted, and run through the tool.
 
+Verify a re-download against the extracted image:
+
+```
+sha256  e0ff2bcb4198d2c23b35e29b7e02a0d0426626a60e2be65973a3982ea61864be
+size    7505539072 bytes   (system.img, after unzip)
+```
+
+### Why the GSI is not vendored in this repo
+
+Unlike the Pastiera APK in `prebuilts/`, the GSI is not committed, for two
+independent reasons.
+
+**Size.** At 7.5 GB it is 72x GitHub's 100 MB per-file limit; even the 3.99 GB
+archive is 38x over. Git LFS does not help at this scale either.
+
+**Licence.** The APK is GPLv3 — redistribution is explicitly permitted, which is
+why committing it was straightforward and why the obligations are documented.
+The GSI is a community repackaging of Xiaomi's **proprietary** HyperOS.
+Publishing it would be redistributing Xiaomi's copyrighted code, which is exactly
+what §7 of `DISTRIBUTION-COMPLIANCE.md` warns against. The size limit makes the
+question moot, but the licence answer would be the same at any size.
+
+**The residual risk.** The APK was archived precisely because upstream nightlies
+get pruned. The same risk applies to this GSI — SourceForge could remove it — and
+it cannot be mitigated the same way. The hash above at least makes any future
+download verifiable. **Keep a local copy of the archive**; the recipe above will
+not help if the file is gone.
+
 The image is **HyperOS OS3.0.50.2.W / Android 16 (SDK 36)**, a 7.5 GB ext4
 **system-as-root** filesystem: the image root is `/`, holding `/apex`, symlinked
 `bin` and `etc`, and the real content under `/system/`. It carries a genuine
