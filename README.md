@@ -49,6 +49,7 @@ will ever exist.
 | [tools/axml.py](tools/axml.py) | Reads an APK's package and IME component from its binary manifest, without the Android SDK |
 | [tools/collect-device-info.sh](tools/collect-device-info.sh) | Pulls HAL manifests, telephony, DRM, fingerprint and camera state off the device over adb. **Untested against hardware** |
 | [prebuilts/pastiera/](prebuilts/pastiera/) | The verified Pastiera APK, with provenance and licence notes |
+| [patches/systemui/](patches/systemui/) | Tier 3 source patches — the Facet specular edge shader, applied before a GSI build |
 | [overlay/](overlay/) | Facet — RRO overlay sources for the glass UI, plus a build script |
 | [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system: depth model, tint, and what needs a source build |
 | [docs/iode-port.md](docs/iode-port.md) | The plan, what is achievable, and what is not |
@@ -91,7 +92,7 @@ flashing, and camera, fingerprint, VoLTE and Widevine keep working.
 ## Open items
 
 - [x] Select and inspect a GSI base — /e/OS 4.3, Android 16
-- [ ] Run `inject-ime.sh` against the /e/OS image
+- [x] Run `inject-ime.sh` against the /e/OS image — verified, fsck clean
 - [ ] Device arrives; run `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
 - [x] Design the glass UI layer — `overlay/`, built with `overlay/build.sh` where an Android SDK exists

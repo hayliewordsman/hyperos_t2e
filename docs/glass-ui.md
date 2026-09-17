@@ -100,10 +100,14 @@ Then inject with the same mechanism the IME uses, into `/system/product/overlay/
 
 ## What still needs Tier 3
 
-Recompiling SystemUI is required only for:
+Recompiling SystemUI is required for anything resources cannot express. The
+first of these is **written**: see `patches/systemui/`, which adds an AGSL
+specular edge shader and hooks it into `ScrimView`. It applies cleanly to
+`lineage-23.0` but has not been compiled.
 
-- specular edge highlights that track device tilt
-- custom AGSL shaders for refraction at panel edges
+Still outstanding at this tier:
+
+- refraction at panel edges, sampling what is behind the surface
 - reshaped QS tile geometry beyond what dimens allow
 
 A source build also **fixes the Android version problem**: LineageOS has branches
