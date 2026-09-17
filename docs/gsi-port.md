@@ -1,6 +1,6 @@
 # HyperOS 3 GSI + Pastiera — port working notes
 
-Last updated: 2026-09-17 (rev 2)
+Last updated: 2026-09-17 (rev 3)
 
 ## What exists now
 
@@ -75,6 +75,45 @@ Those tests caught four real bugs:
    exits 0 even when individual commands fail. The tool now verifies every file
    is present, is a regular file, and carries an SELinux label, and fails loudly
    otherwise.
+
+### Validated against a real HyperOS 3 GSI
+
+`Hyperos-pudding-16-OS3.0.50.2.W-AB-20260122-MysticGSI.zip` was downloaded
+(3.99 GB, exact size match), extracted, and run through the tool.
+
+The image is **HyperOS OS3.0.50.2.W / Android 16 (SDK 36)**, a 7.5 GB ext4
+**system-as-root** filesystem: the image root is `/`, holding `/apex`, symlinked
+`bin` and `etc`, and the real content under `/system/`. It carries a genuine
+48,989-byte `plat_file_contexts` (741 rules) and has ~203 MiB free. Notably it
+does **not** set the `shared_blocks` feature, so `debugfs` writes are safe;
+an image that does set it must not be modified this way.
+
+Results:
+
+| Check | Result |
+|---|---|
+| Filesystem detection | ext4 |
+| Root layout detection | correctly found the nested `/system` |
+| Policy parsing | 741 rules, all three files resolved to `system_file:s0` |
+| Free space | 203 MiB available, 35 MiB payload, no growth needed |
+| Injected files | present, regular, correct modes, correctly labelled |
+| APK integrity | byte-identical out of the image (36,000,629 bytes) |
+| Pre-existing content | `build.prop` identical to pristine |
+| Filesystem consistency | read-only `e2fsck` clean, exit 0 |
+| Runtime | 24 s |
+
+The pristine image fscks clean and so does the output; the block and inode
+deltas match the payload exactly (+4 inodes, +8,811 blocks ≈ 36 MB).
+
+One refinement came out of this run. `debugfs` leaves the free block/inode
+accounting stale, so the repair pass *always* prints `FILE SYSTEM WAS MODIFIED`
+even on a perfectly good image — the first version treated that as a warning and
+cried wolf. The tool now runs a second, read-only `e2fsck` and only fails if
+*that* reports a problem.
+
+A dummy 36 MB APK stood in for Pastiera, since no real APK could be obtained
+here. Everything except the APK's actual contents is therefore validated
+end-to-end on a real image.
 
 ### Limitations
 

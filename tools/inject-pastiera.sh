@@ -199,11 +199,15 @@ if [[ "$FS" == ext4 ]]; then
   done
 
   debugfs -w -f "$CMDS" "$OUT" >"$WORK/debugfs.log" 2>&1 || true
+
+  # debugfs leaves the free block/inode accounting stale, so the repair pass
+  # always reports "FILE SYSTEM WAS MODIFIED" even on a perfectly good image.
+  # What matters is whether a second, read-only pass is clean.
   e2fsck -fy "$OUT" >"$WORK/fsck.log" 2>&1 || true
-  if grep -q 'FILE SYSTEM WAS MODIFIED' "$WORK/fsck.log"; then
-    # fsck repairing anything here means we wrote something malformed.
-    echo "warning: e2fsck had to repair the image after injection" >&2
-    grep -vE '^(e2fsck|Pass |/|$)' "$WORK/fsck.log" | head -5 >&2 || true
+  if ! e2fsck -fn "$OUT" >"$WORK/fsck-confirm.log" 2>&1; then
+    echo "--- e2fsck ---" >&2
+    grep -vE '^(e2fsck |Pass [1-5])' "$WORK/fsck-confirm.log" | head -10 >&2 || true
+    die "image is still inconsistent after repair; not usable"
   fi
 
   # Verify: debugfs reports success even when a command failed, so check.
@@ -216,7 +220,7 @@ see $WORK/debugfs.log (rerun with --keep-tree to retain it)"
     debugfs -R "ea_list $dst" "$OUT" 2>/dev/null | grep -q security.selinux \
       || die "injection failed: $dst has no SELinux label"
   done
-  log "verified: 3 files present, labelled, filesystem clean"
+  log "verified: 3 files present, labelled, fsck clean"
 
 ##############################################################################
 # erofs: unpack, inject, repack
