@@ -246,3 +246,54 @@ grounds.
 
 Use the **/e/OS Android 16 GSI** as the base. It resolves the Treble version
 direction, keeps the privacy stack, and changes nothing about the Facet work.
+
+## What "/e/OS is a layer over LineageOS" actually means
+
+/e/OS does not fork the whole platform. Its `repo` manifest pulls most of the
+~600 projects straight from LineageOS and overrides a specific subset with its
+own forks. The manifest repo carries `lineage-23.0`, `.1` and `.2` branches
+alongside its own `a16`, and a `features/eos-over-lineageos-specs` branch.
+
+That is why the Facet patches, generated against LineageOS `frameworks/base`,
+are expected to apply to an /e/OS tree.
+
+### What /e/OS adds, read from the GSI
+
+| Component | Location |
+|---|---|
+| microG `GmsCore` | `/system/priv-app/GmsCore` |
+| microG `FakeStore` | `/system/priv-app/FakeStore` |
+| microG `GsfProxy` | `/system/app/GsfProxy` |
+| App Lounge (its own store) | `/system/priv-app/AppLounge` |
+| Privileged permissions for microG | `/system/etc/permissions/privapp-permissions-com.google.android.gms.xml` |
+
+That last file is the interesting one: it grants privileged permissions under
+**Google's** package name, which is how microG stands in for Play Services.
+
+**Not bundled:** F-Droid and Aurora Store. Those are ordinary user installs on
+any ROM.
+
+## Could microG be added to plain LineageOS instead?
+
+- **F-Droid** — yes, trivially. It is just an APK, and /e/OS does not ship it
+  either.
+- **Aurora Store** — yes, trivially. An APK, installable from F-Droid.
+- **microG** — this is the hard one. It has to *run as* `com.google.android.gms`
+  with privileged permissions, which is system-level integration, not an install.
+  Historically this needs signature spoofing, a framework patch stock LineageOS
+  does not ship.
+
+**An honest gap:** `FAKE_PACKAGE_SIGNATURE` was not found in this GSI's
+`platform.xml`, `privapp-permissions-platform.xml` or `framework-res.apk`, so
+/e/OS is not using the classic spoofing permission in the place one would expect.
+How it achieves the integration was not traced. Treat "microG needs signature
+spoofing" as the general rule, not as a description of what /e/OS does.
+
+Three routes if you wanted it on LineageOS: use **LineageOS for microG**, which
+already does the work but trails Android versions; **patch and build it
+yourself**, which is reimplementing what /e/OS solved; or a **Magisk module**,
+which needs root and weakens the posture described in `security-posture.md`.
+
+**The practical conclusion:** if you are building from source for Facet anyway,
+building /e/OS gets microG already integrated. Building LineageOS and adding it
+is strictly more work for the same result.
