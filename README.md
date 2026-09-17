@@ -13,6 +13,12 @@ input method bundled as the system default.
 - **[docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md)** — GPLv3
   source and installation information, required if you share a built image
 
+## Start here when the hardware arrives
+
+**[docs/day-one.md](docs/day-one.md)** — read before connecting the device. No
+public Titan 2 Elite firmware exists, so the stock backup you take on day one is
+irreplaceable.
+
 ## Quick start
 
 ```bash
