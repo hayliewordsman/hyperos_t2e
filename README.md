@@ -8,6 +8,10 @@ input method bundled as the system default.
 - **[docs/gsi-port.md](docs/gsi-port.md)** — GSI candidates, tooling, blockers
 - **[tools/inject-ime.sh](tools/inject-ime.sh)** — bundles any IME into a
   GSI system image as a system app and default input method
+- **[tools/axml.py](tools/axml.py)** — reads an APK's package and IME component
+  out of its binary manifest, without the Android SDK
+- **[docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md)** — GPLv3
+  source and installation information, required if you share a built image
 
 ## Quick start
 
