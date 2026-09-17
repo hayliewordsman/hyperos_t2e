@@ -54,6 +54,13 @@ default, so the mirror carries `main` and **no tags** (upstream has 44). The
 commit survives only because it is an ancestor of `main`. That is sufficient, but
 it would be lost if `main` were ever rewritten or force-pushed.
 
+This was attempted from the session that wrote these notes and could not be
+done: writes to this repository are blocked by the session's git proxy (`403`
+on both `git push` and the REST API, the latter reporting "Write access to this
+GitHub API path is not permitted through this proxy"). That is a tooling limit,
+not a permissions problem on the account — the API reports `push: true` here.
+**So this tag is still outstanding** and has to be created by hand.
+
 Optional hardening, entirely through the GitHub web UI:
 
 1. Open the mirror -> **Releases** -> **Draft a new release**
