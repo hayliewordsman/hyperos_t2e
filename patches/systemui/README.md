@@ -6,7 +6,7 @@ building a GSI.
 | Patch | What it does |
 |---|---|
 | `0001-facet-specular-edge.patch` | Adds `FacetEdgeShader` (AGSL) and draws a specular highlight along the top of the shade scrim |
-| `0002-facet-edge-refraction.patch` | Adds `FacetRefractionShader` (AGSL) and **chains** it onto the scrim's existing blur |
+| `0002-facet-edge-refraction.patch` | ⚠️ **Do not build as-is — proven ineffective.** See below |
 
 Apply them in order; `0002` builds on `0001`.
 
@@ -38,6 +38,20 @@ The patch adds:
   panel instead of appearing detached. The shader and paint are created lazily
   and the draw is bounded to `3 × thickness`, since the falloff is already
   transparent beyond that and drawing the full height would waste fill rate.
+
+## ⚠️ 0002 does not work
+
+Rendering the shader math before building (see `docs/preview/`) showed the
+refraction is **invisible**: at 18px, at 90px, and with the order reversed, the
+result is indistinguishable from blur alone. A 24px blur kernel is wider than
+the displacement gradient, so sample-shifting vanishes into it.
+
+Chromatic separation at the rim fails identically. **Rim darkening works**,
+because it modifies values rather than displacing samples.
+
+The patch is kept for its `createChainEffect` plumbing, which is correct and
+reusable, but the shader it chains should be replaced with a value-modifying rim
+treatment before anyone spends a build on it.
 
 ## What 0002 does, and the trap it avoids
 

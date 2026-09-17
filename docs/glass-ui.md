@@ -24,6 +24,16 @@ Tier 3 into Tier 2.
 Tier 3 is then reserved for what resources genuinely cannot express: specular
 edge highlights, custom shaders, reshaped geometry.
 
+## The rule that governs everything here
+
+> On a blurred surface, any effect that works by **displacing samples** is
+> invisible. Only effects that **modify values** — brightness, tint, contrast —
+> survive the blur.
+
+Established by rendering the shader math rather than reasoning about it; see
+`docs/preview/`. It killed the refraction shader and points at rim darkening,
+the edge highlight and tint as the tools that actually do the work.
+
 ## Depth model
 
 Glass reads as depth only if blur is *hierarchical* — a single radius everywhere
