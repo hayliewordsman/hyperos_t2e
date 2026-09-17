@@ -50,17 +50,29 @@ but it is the highest value per gigabyte available.
 None of this fits in the Claude environment, which is why nothing here has been
 compiled.
 
-## Sync the tree
+## Sync the tree — /e/OS, not LineageOS
+
+Build **/e/OS**, so the result keeps the microG privacy stack that was the reason
+for choosing it. Building plain LineageOS would compile Facet but throw that away.
 
 ```bash
-mkdir lineage && cd lineage
-repo init -u https://github.com/LineageOS/android.git -b lineage-23.0 --git-lfs
+mkdir eos && cd eos
+repo init -u https://gitlab.e.foundation/e/os/android.git -b a16 --git-lfs
 repo sync -c -j8 --no-clone-bundle --no-tags      # ~100 GB, takes a while
 ```
 
-Match the branch to the Android version the device actually ships; see
-`base-selection.md` on why an older system image on a newer vendor is the
-unsupported direction.
+`a16` is the manifest's default branch and is Android 16, matching the prebuilt
+GSI this project adopted. Match the branch to the Android version the device
+actually ships; see `base-selection.md` on why an older system image on a newer
+vendor is the unsupported direction.
+
+**Why the patches still apply.** /e/OS is built as a layer over LineageOS — its
+manifest carries `lineage-23.0`, `lineage-23.1` and `lineage-23.2` branches
+alongside its own. The Facet patches were generated against LineageOS
+`lineage-23.0` `frameworks/base`, which is what /e/OS derives from, so they
+should port. They are not guaranteed to: /e/OS may carry its own SystemUI
+changes that move the context lines. Run `git apply --check` first and say so if
+it fails, rather than forcing it.
 
 ## Apply the Facet patches
 
@@ -81,6 +93,7 @@ never been compiled, so expect to fix something on the first build.
 ```bash
 source build/envsetup.sh
 lunch lineage_arm64_bvS-userdebug     # generic A/B arm64 target -- no device tree needed
+                                      # (/e/OS keeps LineageOS target names)
 m -j$(nproc) systemimage
 ```
 

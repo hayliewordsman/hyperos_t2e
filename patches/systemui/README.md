@@ -18,7 +18,9 @@ git apply --check ../../patches/systemui/0001-facet-specular-edge.patch   # veri
 git apply         ../../patches/systemui/0001-facet-specular-edge.patch
 ```
 
-Generated against **`LineageOS/android_frameworks_base`, branch `lineage-23.0`**.
+Generated against **`LineageOS/android_frameworks_base`, branch `lineage-23.0`**,
+and intended to be applied to an **/e/OS `a16`** tree, which is built as a layer
+over LineageOS 23 and carries the same `frameworks/base` lineage.
 It should port across nearby branches, but re-check with `--check` first; the
 `ScrimView.onDraw` hunk is the part most likely to drift.
 
