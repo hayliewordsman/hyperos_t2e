@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tint pulled from the system accent so panels sample the wallpaper rather
+     than flattening it. Alpha is applied programmatically by SystemUI, so these
+     are base hues only. -->
+<resources>
+    <color name="shade_panel_base">@android:color/system_accent1_100</color>
+    <color name="notification_scrim_base">@android:color/system_accent1_100</color>
+    <color name="shade_panel_fallback">@android:color/system_accent2_200</color>
+    <color name="notification_scrim_fallback">@android:color/system_surface_dim_light</color>
+</resources>

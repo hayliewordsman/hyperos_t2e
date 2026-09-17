@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Quality/cost tradeoff for SurfaceFlinger blur. Stock is true (cheaper,
+         lower quality). Flip to false and measure on Mali-G615 before keeping. -->
+    <bool name="config_sf_slowBlur">true</bool>
+</resources>

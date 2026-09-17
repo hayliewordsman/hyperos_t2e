@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stock is false; without this the volume dialog stays flat -->
+    <bool name="config_volumeDialogUseBackgroundBlur">true</bool>
+</resources>

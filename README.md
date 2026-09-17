@@ -47,6 +47,8 @@ will ever exist.
 | [tools/axml.py](tools/axml.py) | Reads an APK's package and IME component from its binary manifest, without the Android SDK |
 | [tools/collect-device-info.sh](tools/collect-device-info.sh) | Pulls HAL manifests, telephony, DRM, fingerprint and camera state off the device over adb. **Untested against hardware** |
 | [prebuilts/pastiera/](prebuilts/pastiera/) | The verified Pastiera APK, with provenance and licence notes |
+| [overlay/](overlay/) | Facet — RRO overlay sources for the glass UI, plus a build script |
+| [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system: depth model, tint, and what needs a source build |
 | [docs/iode-port.md](docs/iode-port.md) | The plan, what is achievable, and what is not |
 | [docs/day-one.md](docs/day-one.md) | Order of operations for when the device arrives |
 | [docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md) | GPLv3 source and installation information, required if you share a built image |
@@ -89,7 +91,9 @@ flashing, and camera, fingerprint, VoLTE and Widevine keep working.
 - [ ] Fetch an iodéOS GSI and run the pipeline against it
 - [ ] Device arrives; run `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
-- [ ] Design the glass UI layer; an RRO overlay needs Android SDK access to build
+- [x] Design the glass UI layer — `overlay/`, built with `overlay/build.sh` where an Android SDK exists
+- [ ] Confirm the device sets `ro.surface_flinger.supports_background_blur`; without it the glass effect collapses
+- [ ] Resolve the GSI Android version: iodé ships only Android 14, likely older than the device
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
 
 ## Caveat

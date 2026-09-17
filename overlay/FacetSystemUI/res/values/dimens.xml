@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Facet depth model. Each tier roughly doubles; the eye reads the ratio. -->
+<resources>
+    <!-- L1 floor so even shallow surfaces sample the wallpaper -->
+    <dimen name="min_window_blur_radius">8dp</dimen>
+    <!-- L3: ceiling for status bar window and power menu -->
+    <dimen name="max_window_blur_radius">48dp</dimen>
+    <!-- L3: shade content sits at the same depth as its window chrome -->
+    <dimen name="max_shade_content_blur_radius">48dp</dimen>
+    <!-- L4: the deepest layer, behind the whole shade -->
+    <dimen name="max_shade_window_blur_radius">64dp</dimen>
+    <!-- L2: stock ships this at 0dp, which disables it outright -->
+    <dimen name="volume_dialog_background_blur_radius">24dp</dimen>
+</resources>

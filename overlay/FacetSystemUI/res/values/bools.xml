@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stock is false, which makes the shade scrim opaque and kills the effect -->
+    <bool name="notification_scrim_transparent">true</bool>
+</resources>
