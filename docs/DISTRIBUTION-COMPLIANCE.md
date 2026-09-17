@@ -29,6 +29,7 @@ It does **not** cover the rest of the image. See §7.
 | Package (applicationId) | `it.palsoftware.pastiera.nightly` |
 | Version | `0.86-nightly.20260820.222455` |
 | Obtained from | `https://pastiera.eu/fdroid/nightly/repo/` |
+| Archived in this repo | `prebuilts/pastiera/` (verify with `SHA256SUMS`) |
 
 **The APK is unmodified.** `tools/inject-ime.sh` copies it byte-for-byte; the
 hash above matches both the upstream F-Droid repo index and the copy extracted
@@ -59,6 +60,13 @@ One caveat on provenance: the tag name matches the APK's version string, but
 nothing here *proves* the upstream binary was built from that commit — it is not
 a verified reproducible build. If you need certainty, build the APK yourself
 from this commit and ship your own build, then update §2.
+
+### This repository is public
+
+The APK is committed at `prebuilts/pastiera/`, and this repository is public, so
+the binary is already being **conveyed**. The §6 source obligation is live now,
+not hypothetical. The cheapest way to make it durable is to fork
+`palsoftware/pastiera` under your own account and point §3 at the fork.
 
 ### Host the source yourself
 
