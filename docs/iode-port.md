@@ -203,3 +203,42 @@ de-Googling is the goal, the honest answer is that this device cannot deliver it
 
 The Facet overlay is unaffected by this choice: every resource it overrides is
 upstream LineageOS SystemUI, which all of these share.
+
+### /e/OS Android 16 GSI, inspected
+
+`v4.3-a16-20260821-microG-gsi.img.xz` — 1,416,191,504 bytes, decompressing to
+3,896,528,896 bytes.
+
+| Property | Value |
+|---|---|
+| **Android version** | **16** (`BP2A.250805.005`) — the version problem is solved |
+| Filesystem | ext4, nested under `/system` — `inject-ime.sh` handles it unchanged |
+| Base | `tdgsi_arm64_ab`, flavor `treble_arm64_bmGN-userdebug` — same TrebleDroid family as iodé |
+| `/system/product/overlay` | present — RRO injection point |
+| `/system/system_ext/priv-app/SystemUI` | present — Tier 3 target |
+| `/system/bin/surfaceflinger` | present — the compositor is ours, so the blur property is ours to set |
+| `ro.surface_flinger.supports_background_blur` | **not set** — only a frame-rate override is present |
+
+Because it is the same TrebleDroid/LineageOS lineage as iodé, **the Facet overlay
+applies unchanged**. Every resource it overrides is upstream SystemUI.
+
+Two things to be aware of:
+
+**No published checksum.** Unlike iodé, which ships `.sha256` and a minisign
+`.minisig`, the /e/OS GSI directory carries the image alone. Verify future
+downloads against this, computed here:
+
+```
+sha256  c1442b4fc543ec1b1b1552c279652b36cae4c93c7767c38b61837b3615732f43
+size    1416191504 bytes  (the .xz)
+```
+
+**It is a userdebug build** (`eng.root:userdebug`). That is normal for GSIs and
+convenient for development, since adb root is available, but it is a weaker
+security posture than a user build — worth weighing for a ROM chosen on privacy
+grounds.
+
+### Recommendation
+
+Use the **/e/OS Android 16 GSI** as the base. It resolves the Treble version
+direction, keeps the privacy stack, and changes nothing about the Facet work.

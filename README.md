@@ -1,6 +1,7 @@
 # titan2e-iode
 
-Tooling to run **iodéOS** on the **Unihertz Titan 2 Elite** via a GSI, with a
+Tooling to run a privacy-focused Android on the **Unihertz Titan 2 Elite** via a
+GSI — currently **/e/OS 4.3 (Android 16)** — with a
 physical-keyboard input method bundled as the system default and a glass-style
 UI layer on top.
 
@@ -20,7 +21,8 @@ Done and verified:
 - **GPLv3 source and installation information**, with the source offer pointing
   at a mirror under our control.
 
-Next: fetch an iodéOS GSI and run the pipeline against it. See
+Base selected: the **/e/OS Android 16 GSI**, inspected and verified. iodé's GSI
+is Android 14, which is the unsupported direction for a 2026 device. See
 [docs/iode-port.md](docs/iode-port.md).
 
 ## Scope, honestly
@@ -88,12 +90,13 @@ flashing, and camera, fingerprint, VoLTE and Widevine keep working.
 
 ## Open items
 
-- [ ] Fetch an iodéOS GSI and run the pipeline against it
+- [x] Select and inspect a GSI base — /e/OS 4.3, Android 16
+- [ ] Run `inject-ime.sh` against the /e/OS image
 - [ ] Device arrives; run `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
 - [x] Design the glass UI layer — `overlay/`, built with `overlay/build.sh` where an Android SDK exists
 - [ ] Confirm the device sets `ro.surface_flinger.supports_background_blur`; without it the glass effect collapses
-- [ ] Resolve the GSI Android version: iodé ships only Android 14, likely older than the device
+
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
 
 ## Caveat
