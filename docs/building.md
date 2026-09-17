@@ -15,6 +15,29 @@ emulator -writable-system
 
 Build the GSI only once the look is settled and you want it on the phone.
 
+## If you do not have 250-400 GB
+
+The full build is genuinely large, and running out of disk at 90% after several
+hours is the worst outcome. Around **130 GB is not enough**: the source alone is
+60-80 GB even with `-c --no-tags`, and `out/` for a full emulator build adds
+80-120 GB.
+
+Three ways round it, cheapest first:
+
+1. **Validate the shaders instead of building the ROM.** The riskiest untested
+   thing here is whether the AGSL compiles at all — everything else is verified.
+   `tools/shader-check/` is a ~20 MB Android app that compiles both shaders and
+   draws them, and runs on any Android 13+ emulator. That removes the most
+   likely failure for the price of Android Studio.
+2. **Build on an external drive.** A 1 TB USB SSD is cheap and sufficient. A
+   spinning disk works but the build is I/O bound, so expect it to drag.
+3. **Rent a cloud VM for an afternoon.** A machine with 500 GB and plenty of
+   cores costs a few currency units for the hours a build takes, and is what
+   many ROM developers actually do.
+
+Option 1 does not replace a build — see the limits in that directory's README —
+but it is the highest value per gigabyte available.
+
 ## Host requirements
 
 | | |

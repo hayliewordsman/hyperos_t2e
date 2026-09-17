@@ -39,6 +39,7 @@ be no way back. The dump you take on day one is the only one that will exist.
 | [tools/inject-ime.sh](tools/inject-ime.sh) | Injects an IME and sets properties in a GSI. ext4 + EROFS, raw + sparse, both root layouts, verified afterwards |
 | [tools/axml.py](tools/axml.py) | Reads an APK's package and IME component from its binary manifest, without the Android SDK |
 | [tools/collect-device-info.sh](tools/collect-device-info.sh) | Pulls HAL, telephony, DRM and fingerprint state off the device over adb. **Untested against hardware** |
+| [tools/shader-check/](tools/shader-check/) | ~20 MB Android app that compiles the Facet AGSL, for validating the shaders without a 300 GB tree |
 | [overlay/](overlay/) | Facet RRO overlay sources (Tier 2) and a build script |
 | [patches/systemui/](patches/systemui/) | Facet SystemUI source patches (Tier 3) |
 | [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system and the rule that governs it |
@@ -83,7 +84,7 @@ against 0.0000 at the centre. See [docs/preview/](docs/preview/).
 
 ## Open items
 
-- [ ] **Compile something.** Nothing here has been built; that is the largest untested surface, and it needs ~300 GB but no phone — see [docs/building.md](docs/building.md)
+- [ ] **Compile something.** Nothing here has been built; that is the largest untested surface. A full build needs ~300 GB, but [tools/shader-check/](tools/shader-check/) validates the AGSL in ~20 MB — see [docs/building.md](docs/building.md)
 - [ ] Device arrives → `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
 - [x] Apply the ADB hardening props — done, each verified present exactly once in the image
