@@ -1,30 +1,33 @@
 # hyperos_t2e
 
-Investigating HyperOS on the **Unihertz Titan 2 Elite**, with [Pastiera](https://pastiera.eu)
-for physical-keyboard typing.
+HyperOS 3 on the **Unihertz Titan 2 Elite** via a GSI, with
+[Pastiera](https://pastiera.eu) bundled as the default input method.
 
-## Current status
+- **[docs/feasibility.md](docs/feasibility.md)** — why a direct Xiaomi 17 ROM port
+  is not possible, and why a GSI is the only viable route
+- **[docs/gsi-port.md](docs/gsi-port.md)** — GSI candidates, tooling, blockers
+- **[tools/inject-pastiera.sh](tools/inject-pastiera.sh)** — bundles Pastiera into a
+  GSI system image as a system app and default IME
 
-Read **[docs/feasibility.md](docs/feasibility.md)** first. Short version:
+## Quick start
 
-- **Porting the Xiaomi 17 HyperOS ROM to this device is not achievable.** The Xiaomi 17
-  is Qualcomm (Snapdragon 8 Elite Gen 5, Adreno); the Titan 2 Elite is MediaTek
-  (Dimensity 7400, Mali). Kernel, GPU stack, modem, HALs, and boot chain are all
-  SoC-specific, so this is a platform bring-up rather than a port.
-- **A GSI is the only route that can work** — the HyperOS system layer over Unihertz's
-  own vendor and kernel. Camera, fingerprint, VoLTE and Widevine L1 are the expected
-  casualties.
-- **Pastiera is an IME app, not a compatibility layer.** It installs as an APK and
-  needs no ROM work. It already treats the Titan 2 as a reference device.
+```bash
+apt-get install -y erofs-utils android-sdk-libsparse-utils
+tools/inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-pastiera.img
+```
 
-## Blockers
+## Status
 
-| Blocker | Needed to unblock |
-|---|---|
-| `miuirom.org` and `pastiera.eu` refused by egress policy (403) | Add both to the environment's network allowlist |
-| Titan 2 Elite bootloader unlock is unverified | Confirm the procedure with Unihertz — nothing else matters until this is known |
+The injection tool is written and tested against synthetic EROFS images (raw,
+sparse, and both root layouts), with SELinux relabelling verified. It has **not**
+been run against a real HyperOS GSI yet, and no Pastiera APK could be obtained in
+this environment — `pastiera.eu`, `f-droid.org` and `dl.google.com` are all
+blocked by the network policy, so the APK can neither be downloaded nor built.
 
-## If the goal is better typing
+Seven HyperOS 3 (Android 16) arm64 A/B GSIs are catalogued in the port notes.
 
-Install Pastiera on the stock ROM. It delivers the physical-keyboard improvements on
-its own, with no unlock, no warranty risk, and no broken camera.
+**Before doing any of this:** confirm the Titan 2 Elite's bootloader can be
+unlocked. It gates the entire project and is still unanswered.
+
+If the goal is simply better typing, installing Pastiera on the stock ROM
+delivers that on its own — no unlock, no GSI, no broken camera.
