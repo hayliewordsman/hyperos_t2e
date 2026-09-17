@@ -1,15 +1,17 @@
 # HyperOS 3 GSI + Pastiera — port working notes
 
-Last updated: 2026-09-17 (rev 3)
+Last updated: 2026-09-17 (rev 4)
 
 ## What exists now
 
-`tools/inject-pastiera.sh` takes a GSI system image and a Pastiera APK and
-produces a modified image with Pastiera preinstalled as a system app and
-selected as the default IME on first boot.
+`tools/inject-ime.sh` takes a GSI system image and any input-method APK and
+produces a modified image with that IME preinstalled as a system app and
+selected as the default on first boot. It is not tied to one keyboard:
+`--ime-id <package>/<component>` selects which, defaulting to Pastiera.
 
 ```
-tools/inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-pastiera.img
+tools/inject-ime.sh --image system.img --apk Keyboard.apk --out out.img \
+    --ime-id com.example.kb/.MyInputMethodService   # optional, defaults to Pastiera
 ```
 
 It handles Android sparse and raw images and **both filesystems GSIs ship**:
@@ -23,9 +25,9 @@ own `plat_file_contexts` (most-specific rule wins), falling back to
 
 | Path | Mode | Purpose |
 |---|---|---|
-| `/system/app/Pastiera/Pastiera.apk` | 0644 | the IME, as a system app |
-| `/system/bin/pastiera-setup-ime.sh` | 0755 | one-shot first-boot setup |
-| `/system/etc/init/pastiera-ime.rc` | 0644 | starts it at `sys.boot_completed=1` |
+| `/system/app/<Name>/<Name>.apk` | 0644 | the IME, as a system app |
+| `/system/bin/default-ime-setup.sh` | 0755 | one-shot first-boot setup |
+| `/system/etc/init/default-ime.rc` | 0644 | starts it at `sys.boot_completed=1` |
 
 The setup script waits for package manager to scan the app, then sets
 `enabled_input_methods`, `default_input_method`, and `show_ime_with_hard_keyboard`
@@ -178,3 +180,44 @@ worth doing. Nothing else matters if the device will not unlock.
 3. Back up stock firmware.
 4. Download a HyperOS 3 GSI (they are ext4), run the tool, flash.
 5. Expect camera, fingerprint, VoLTE and Widevine L1 to be degraded or broken.
+
+## Choosing the keyboard
+
+The tool is IME-agnostic, so the choice is on merit, not on what the tooling
+supports.
+
+### Kika Keyboard — rejected
+
+Considered and ruled out on two independent grounds.
+
+**Security.** Google removed Kika Keyboard from Play after an internal
+investigation found code performing ad fraud (click injection / click flooding),
+first documented by Kochava and reported by BuzzFeed News in 2018. The apps
+requested permissions including the ability to track keystrokes. An IME observes
+every password, message and 2FA code typed on the device, and this tool installs
+it to `/system/app`, where it is privileged and cannot be uninstalled normally.
+The Unihertz Treble community independently flagged it — see
+`phhusson/unihertz_titan` issue #2, "Kika keyboard is suspect".
+
+**Fit.** The consumer Kika app is an on-screen keyboard for emoji, themes and
+GIFs. Keypad scrolling — using the physical keys as a trackpad — is a
+hardware-keyboard feature it does not implement. Kika's advertised
+hardware-keyboard support belongs to their B2B OEM licensing product, which is
+not a downloadable app.
+
+### The acquisition blocker is not keyboard-specific
+
+No APK can be fetched from this environment at all: GitHub release assets return
+403, and F-Droid, Play, the Kika site, apkmirror, uptodown and apkpure are all
+refused by the egress policy. Switching keyboards does not unblock anything —
+the APK has to be supplied by hand whichever one is chosen.
+
+### What actually fits the requirement
+
+Advanced symbols, keypad scrolling and emoji on a physical QWERTY are
+hardware-keyboard IME features. Pastiera implements exactly these (SYM pages,
+swipe-pad cursor gestures, emoji picker, long-press variations) and names the
+Unihertz Titan 2 as a reference device, which is why it was chosen. If it is
+rejected for other reasons, the replacement should still be an IME that handles
+hardware key events — a soft keyboard cannot provide keypad scrolling regardless
+of its emoji support.

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Inject Pastiera into a GSI system image and make it the default IME.
+# Inject an input method into a GSI system image and make it the default IME.
 #
-#   inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-pastiera.img
+#   inject-ime.sh --image system.img --apk Keyboard.apk --out out.img \
+#                 --ime-id com.example.kb/.MyInputMethodService
+#
+# --ime-id defaults to Pastiera. The component may be written in the short form
+# (leading dot) or fully qualified; both are accepted.
 #
 # Handles Android sparse and raw images. Supports both filesystems GSIs ship:
 #   ext4  - modified in place with debugfs (no mount, no e2fsdroid needed)
@@ -12,9 +16,9 @@
 
 set -euo pipefail
 
-IME_PKG="it.palsoftware.pastiera"
-IME_CLASS="it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService"
-IME_ID="${IME_PKG}/${IME_CLASS}"
+# Default IME: Pastiera. Override with --ime-id for any other keyboard.
+IME_ID="it.palsoftware.pastiera/.inputmethod.PhysicalKeyboardInputMethodService"
+APP_NAME=
 DEFAULT_LABEL="u:object_r:system_file:s0"
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -26,6 +30,8 @@ while [[ $# -gt 0 ]]; do
     --image) IMAGE="$2"; shift 2 ;;
     --apk)   APK="$2";   shift 2 ;;
     --out)   OUT="$2";   shift 2 ;;
+    --ime-id) IME_ID="$2"; shift 2 ;;
+    --name)   APP_NAME="$2"; shift 2 ;;
     --keep-tree) KEEP_TREE="$2"; shift 2 ;;
     -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
@@ -35,6 +41,20 @@ done
 [[ -f "$IMAGE" ]] || die "no such image: $IMAGE"
 [[ -f "$APK"   ]] || die "no such apk: $APK"
 
+# Split pkg/component and expand a leading-dot class to its full name.
+[[ "$IME_ID" == */* ]] || die "--ime-id must be <package>/<component>: $IME_ID"
+IME_PKG="${IME_ID%%/*}"
+IME_CLASS="${IME_ID#*/}"
+[[ "$IME_CLASS" == .* ]] && IME_CLASS="${IME_PKG}${IME_CLASS}"
+IME_ID="${IME_PKG}/${IME_CLASS}"
+# Directory under /system/app, e.g. it.palsoftware.pastiera -> Pastiera
+if [[ -z "$APP_NAME" ]]; then
+  last="${IME_PKG##*.}"
+  APP_NAME="$(tr '[:lower:]' '[:upper:]' <<<"${last:0:1}")${last:1}"
+fi
+log "IME:  $IME_ID"
+log "app:  /system/app/$APP_NAME/$APP_NAME.apk"
+
 WORK="$(mktemp -d)"
 cleanup() { [[ -n "$KEEP_TREE" ]] || rm -rf "$WORK"; }
 trap cleanup EXIT
@@ -42,13 +62,13 @@ trap cleanup EXIT
 # --- payload ----------------------------------------------------------------
 # The three files injected into the image, staged on disk first.
 STAGE="$WORK/stage"; mkdir -p "$STAGE"
-cp "$APK" "$STAGE/Pastiera.apk"
+cp "$APK" "$STAGE/$APP_NAME.apk"
 
-cat > "$STAGE/pastiera-setup-ime.sh" <<EOF
+cat > "$STAGE/default-ime-setup.sh" <<EOF
 #!/system/bin/sh
-# Select Pastiera as the input method on first boot. Runs once.
+# Select ${IME_PKG} as the input method on first boot. Runs once.
 IME="${IME_ID}"
-STAMP=/data/misc/pastiera/.default-ime-applied
+STAMP=/data/misc/default-ime/.applied
 [ -f "\$STAMP" ] && exit 0
 
 # Wait for package manager to have scanned the system app.
@@ -64,19 +84,19 @@ settings put secure default_input_method  "\$IME"
 # Physical-keyboard devices otherwise hide the IME entirely.
 settings put secure show_ime_with_hard_keyboard 1
 
-mkdir -p /data/misc/pastiera && touch "\$STAMP"
+mkdir -p /data/misc/default-ime && touch "\$STAMP"
 EOF
 
-cat > "$STAGE/pastiera-ime.rc" <<EOF
-# Set Pastiera as the default input method once the framework is up.
-service pastiera_ime /system/bin/sh /system/bin/pastiera-setup-ime.sh
+cat > "$STAGE/default-ime.rc" <<EOF
+# Set ${IME_PKG} as the default input method once the framework is up.
+service default_ime /system/bin/sh /system/bin/default-ime-setup.sh
     user root
     group root system
     disabled
     oneshot
 
 on property:sys.boot_completed=1
-    start pastiera_ime
+    start default_ime
 EOF
 
 # device path : staged file : mode
@@ -84,9 +104,9 @@ EOF
 # verbatim, so a bare 0644 clears the file-type nibble and e2fsck then deletes
 # the inode as corrupt.
 PAYLOAD=(
-  "app/Pastiera/Pastiera.apk:$STAGE/Pastiera.apk:0100644"
-  "bin/pastiera-setup-ime.sh:$STAGE/pastiera-setup-ime.sh:0100755"
-  "etc/init/pastiera-ime.rc:$STAGE/pastiera-ime.rc:0100644"
+  "app/$APP_NAME/$APP_NAME.apk:$STAGE/$APP_NAME.apk:0100644"
+  "bin/default-ime-setup.sh:$STAGE/default-ime-setup.sh:0100755"
+  "etc/init/default-ime.rc:$STAGE/default-ime.rc:0100644"
 )
 
 # --- 1. sparse -> raw -------------------------------------------------------
@@ -220,7 +240,7 @@ see $WORK/debugfs.log (rerun with --keep-tree to retain it)"
     debugfs -R "ea_list $dst" "$OUT" 2>/dev/null | grep -q security.selinux \
       || die "injection failed: $dst has no SELinux label"
   done
-  log "verified: 3 files present, labelled, fsck clean"
+  log "verified: ${#PAYLOAD[@]} files present, labelled, fsck clean"
 
 ##############################################################################
 # erofs: unpack, inject, repack

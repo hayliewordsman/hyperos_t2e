@@ -1,19 +1,19 @@
 # hyperos_t2e
 
-HyperOS 3 on the **Unihertz Titan 2 Elite** via a GSI, with
-[Pastiera](https://pastiera.eu) bundled as the default input method.
+HyperOS 3 on the **Unihertz Titan 2 Elite** via a GSI, with a physical-keyboard
+input method bundled as the system default.
 
 - **[docs/feasibility.md](docs/feasibility.md)** — why a direct Xiaomi 17 ROM port
   is not possible, and why a GSI is the only viable route
 - **[docs/gsi-port.md](docs/gsi-port.md)** — GSI candidates, tooling, blockers
-- **[tools/inject-pastiera.sh](tools/inject-pastiera.sh)** — bundles Pastiera into a
-  GSI system image as a system app and default IME
+- **[tools/inject-ime.sh](tools/inject-ime.sh)** — bundles any IME into a
+  GSI system image as a system app and default input method
 
 ## Quick start
 
 ```bash
 apt-get install -y erofs-utils android-sdk-libsparse-utils
-tools/inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-pastiera.img
+tools/inject-ime.sh --image system.img --apk Keyboard.apk --out out.img
 ```
 
 ## Status
