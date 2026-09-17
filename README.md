@@ -4,6 +4,12 @@ Tooling to put a privacy-focused Android on the **Unihertz Titan 2 Elite** via a
 GSI, with a physical-keyboard IME as the system default and **Facet**, an
 original glass UI layer.
 
+![Facet rim darkening: blur, tint and edge highlight above; with rim darkening below](docs/preview/facet-rim-effect.png)
+
+*Facet, rendered by evaluating the shaders' own math — **not a screenshot**.
+Top: blur, tint and the top edge highlight. Bottom: with rim darkening. More in
+[docs/preview/](docs/preview/).*
+
 ## Status
 
 **No hardware yet**, and **nothing has been compiled.** Everything below was
@@ -68,8 +74,10 @@ component with `axml.py`.
 
 **The blur rule.** On a blurred surface, any effect that works by *displacing
 samples* is invisible; only effects that *modify values* survive. Established by
-rendering the shader math, and it killed the refraction shader before it cost a
-build. See [docs/preview/](docs/preview/).
+rendering the shader math rather than reasoning about it. It killed a refraction
+shader — and then a chromatic-aberration replacement — before either cost a
+build, and pointed at rim darkening, which measures 0.154 mean change at the rim
+against 0.0000 at the centre. See [docs/preview/](docs/preview/).
 
 ## Open items
 
