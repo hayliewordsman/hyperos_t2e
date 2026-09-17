@@ -18,11 +18,14 @@ tools/inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-past
 
 ## Status
 
-The injection tool is written and tested against synthetic EROFS images (raw,
-sparse, and both root layouts), with SELinux relabelling verified. It has **not**
-been run against a real HyperOS GSI yet, and no Pastiera APK could be obtained in
-this environment — `pastiera.eu`, `f-droid.org` and `dl.google.com` are all
-blocked by the network policy, so the APK can neither be downloaded nor built.
+The injection tool supports **ext4 and EROFS**, raw and sparse, in both root
+layouts, and verifies every injected file afterwards. Real HyperOS 3 GSIs turn
+out to be **ext4**, not EROFS — confirmed by probing the archive over HTTP range
+requests without downloading it.
+
+Still missing: a Pastiera APK. `pastiera.eu`, `f-droid.org` and `dl.google.com`
+are all blocked by the network policy, so it can neither be downloaded nor built
+here.
 
 Seven HyperOS 3 (Android 16) arm64 A/B GSIs are catalogued in the port notes.
 

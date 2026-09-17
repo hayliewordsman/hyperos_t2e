@@ -1,6 +1,6 @@
 # HyperOS 3 GSI + Pastiera — port working notes
 
-Last updated: 2026-09-17
+Last updated: 2026-09-17 (rev 2)
 
 ## What exists now
 
@@ -12,9 +12,14 @@ selected as the default IME on first boot.
 tools/inject-pastiera.sh --image system.img --apk Pastiera.apk --out system-pastiera.img
 ```
 
-It handles Android sparse and raw images, unpacks EROFS, injects three files,
-and repacks with SELinux labels reapplied from the image's own
-`plat_file_contexts`:
+It handles Android sparse and raw images and **both filesystems GSIs ship**:
+
+- **ext4** — modified in place with `debugfs` (no mount, no `e2fsdroid`)
+- **EROFS** — unpacked, injected, repacked with `mkfs.erofs --file-contexts`
+
+Three files are injected, each given an SELinux label resolved from the image's
+own `plat_file_contexts` (most-specific rule wins), falling back to
+`u:object_r:system_file:s0`:
 
 | Path | Mode | Purpose |
 |---|---|---|
@@ -27,29 +32,55 @@ The setup script waits for package manager to scan the app, then sets
 (without that last one a physical-keyboard device hides the IME entirely), and
 stamps `/data/misc/pastiera/` so it only runs once.
 
+### The images are ext4, not EROFS
+
+The earlier assumption that Android 16 GSIs would be EROFS was **wrong for these
+builds**. Probing the real archive without downloading it — reading the ZIP
+central directory over HTTP range requests, then inflating only the first ~36 MB
+of the entry — shows:
+
+```
+Hyperos-pudding-16-OS3.0.50.2.W-AB-20260122-MysticGSI.zip   3.99 GB
+  └── system.img   7.51 GB uncompressed, deflate
+        @0x438 = 53ef   -> ext4
+        @1024  = 00000700 -> not EROFS
+```
+
+The archive holds a single bare `system.img`, not sparse. An EROFS-only tool
+would have rejected it outright, so ext4 support is the path that actually
+matters.
+
 ### Verification status
 
-Tested against synthetic EROFS images covering four cases:
+Tested against synthetic images covering five cases:
 
-- raw EROFS, tree containing `system/` → **pass**, labels applied (`Xattr size: 16`)
-- Android sparse wrapper → **pass**, converted and injected
-- tree rooted at the system dir itself → **pass**
-- ext4 image → **correctly rejected** (see limitations)
+| Case | Result |
+|---|---|
+| ext4, rooted at the system partition | pass, verified |
+| ext4, Android sparse wrapper | pass, converted and verified |
+| EROFS, tree containing `system/` | pass, labels applied |
+| EROFS, tree rooted at the system dir | pass |
+| unrecognised filesystem | correctly rejected |
 
-Two real bugs were found and fixed by those tests: the EROFS superblock magic was
-byte-reversed (`od -tx4` prints the little-endian word, so it reads `e0f5e1e2`),
-and the `--mount-point` logic was inverted, which silently produced an image with
-**no SELinux labels at all** on the injected files.
+Those tests caught four real bugs:
 
-**Not yet validated against a real HyperOS GSI.** See blockers.
+1. EROFS superblock magic was byte-reversed — `od -tx4` prints the little-endian
+   word, so it reads `e0f5e1e2`.
+2. `--mount-point` logic was inverted, silently producing images with **no
+   SELinux labels at all** on injected files.
+3. `debugfs sif mode 0644` writes `i_mode` verbatim, clearing the `S_IFREG`
+   type bits; `e2fsck` then deleted the injected inodes as corrupt. Modes must
+   be `0100644`/`0100755`.
+4. The ext4 path reported success while injecting nothing, because `debugfs`
+   exits 0 even when individual commands fail. The tool now verifies every file
+   is present, is a regular file, and carries an SELinux label, and fails loudly
+   otherwise.
 
 ### Limitations
 
-- **EROFS only.** ext4 repacking needs `e2fsdroid` to restore SELinux labels,
-  which is not available here. Android 14+ GSIs are normally EROFS, but this is
-  unconfirmed for the HyperOS 3 builds below.
-- **The first-boot hook is best-effort.** An enforcing GSI may deny an init
-  service invoking `settings`. The reliable fallback, which always works:
+- **The first-boot hook is best-effort.** The `.rc` runs `/system/bin/sh`, whose
+  `shell_exec` label means an enforcing build may deny init invoking `settings`.
+  The reliable fallback, which always works:
   ```
   adb shell ime enable it.palsoftware.pastiera/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService
   adb shell ime set    it.palsoftware.pastiera/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService
@@ -94,7 +125,7 @@ are community ports of other Xiaomi devices' HyperOS 3 builds.
 |---|---|---|
 | No Pastiera APK obtainable here | Cannot run the tool end-to-end | Allowlist `pastiera.eu`, or supply an APK |
 | `dl.google.com` blocked | Cannot build the APK from source (no Android SDK) | Allowlist `dl.google.com` |
-| SourceForge now rate-limiting | Could not confirm the GSI is EROFS | Retry later, or download manually |
+| ~~SourceForge blocking~~ | ~~Could not confirm filesystem~~ | **Resolved** — mirrors 403 a browser-like User-Agent; plain curl defaults work |
 | Titan 2 Elite bootloader unlock unverified | **Gates the entire project** | Ask Unihertz |
 
 The bootloader question is still the one that decides whether any of this is
@@ -106,5 +137,5 @@ worth doing. Nothing else matters if the device will not unlock.
 2. Install Pastiera on the **stock** ROM and confirm it works on this keyboard.
    This is independent of the GSI and is most of the value.
 3. Back up stock firmware.
-4. Download a HyperOS 3 GSI, confirm it is EROFS, run the tool, flash.
+4. Download a HyperOS 3 GSI (they are ext4), run the tool, flash.
 5. Expect camera, fingerprint, VoLTE and Widevine L1 to be degraded or broken.
