@@ -221,3 +221,79 @@ Unihertz Titan 2 as a reference device, which is why it was chosen. If it is
 rejected for other reasons, the replacement should still be an IME that handles
 hardware key events — a soft keyboard cannot provide keypad scrolling regardless
 of its emoji support.
+
+## Build completed against real inputs
+
+Both inputs were fetched and the image was built and verified.
+
+**Keyboard.** Stable 0.85 could not be obtained: it is published only through
+GitHub releases on `palsoftware/pastiera`, and this session cannot reach that
+repository's API (cross-owner attach is unsupported) — a session repo-scope
+limit, unrelated to network egress. `pastiera.eu` hosts only the **nightly**
+F-Droid repo, so the build uses:
+
+```
+pastiera-nightly-0.86-nightly.20260820.222455.apk   45,576,726 bytes
+sha256 be36f7c3e0a28df56b1a2d112c017d999d65790031d99b171e34d2a01d9643e2   (matches repo index)
+```
+
+0.86-nightly is newer than 0.85, so it includes the 0.85 work — whose release
+notes explicitly list **"Titan 2 Elite QWERTY"** among expanded device support.
+It is a nightly, not a stable build.
+
+**A trap worth recording.** The nightly's applicationId is
+`it.palsoftware.pastiera.nightly`, but its IME class keeps the original
+namespace, because Gradle's `applicationIdSuffix` does not move the Java
+package. The component is therefore:
+
+```
+it.palsoftware.pastiera.nightly/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService
+```
+
+Passing the short form `.inputmethod.…` would expand to
+`it.palsoftware.pastiera.nightly.inputmethod.…`, which does not exist, and the
+keyboard would silently never activate. `tools/axml.py` reads the package and
+IME service straight out of the APK's binary manifest so this is never guessed.
+
+**Result** (6m30s):
+
+| Check | Result |
+|---|---|
+| Injected files | present, regular, correct modes, `system_file:s0` |
+| APK in image | sha256 identical to the signed upstream |
+| Manifest re-parsed from in-image copy | package and component intact |
+| Boot hook | wired to the fully-qualified component |
+| `build.prop` | identical to pristine |
+| `e2fsck -fn` | clean |
+| Output | `system-pastiera.img`, 7,505,539,072 bytes |
+
+## Reproducing the build
+
+The 7.5 GB image cannot be shipped through this repo or a chat attachment, but
+both inputs are public, so the build reproduces in about ten minutes:
+
+```bash
+apt-get install -y erofs-utils android-sdk-libsparse-utils e2fsprogs
+
+# 1. GSI  (plain curl defaults - a browser-like User-Agent gets 403 from the mirrors)
+curl -sSLO "https://downloads.sourceforge.net/project/mystic-gsi-updates/HyperOS/\
+Hyperos-pudding-16-OS3.0.50.2.W-AB-20260122-MysticGSI.zip"
+unzip -o Hyperos-pudding-16-*.zip          # -> system.img, 7.5 GB ext4
+
+# 2. Keyboard
+curl -sSL -o pastiera.apk \
+  "https://pastiera.eu/fdroid/nightly/repo/pastiera-nightly-0.86-nightly.20260820.222455.apk"
+
+# 3. Confirm what the APK actually declares, then inject
+python3 tools/axml.py pastiera.apk
+tools/inject-ime.sh --image system.img --apk pastiera.apk --out system-pastiera.img \
+  --name Pastiera \
+  --ime-id it.palsoftware.pastiera.nightly/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService
+```
+
+Swap in the stable 0.85 APK and its component (package `it.palsoftware.pastiera`,
+same class) whenever it is available.
+
+Note that the image now embeds a GPLv3 application. Flashing it to your own
+phone is not distribution and triggers nothing; sharing the image would oblige
+you to provide Pastiera's corresponding source and installation information.
