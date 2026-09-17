@@ -1,4 +1,8 @@
-# iodéOS on the Unihertz Titan 2 Elite — plan and constraints
+# Choosing a base for the Unihertz Titan 2 Elite
+
+How the GSI base was chosen, what the hardware work needs, and what is not
+achievable. The conclusion is **/e/OS, Android 16**; iodéOS is covered because
+it was evaluated first and the reasons for moving off it still matter.
 
 Last updated: 2026-09-17
 

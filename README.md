@@ -1,4 +1,4 @@
-# titan2e-iode
+# titan2e-eos
 
 Tooling to put a privacy-focused Android on the **Unihertz Titan 2 Elite** via a
 GSI, with a physical-keyboard IME as the system default and **Facet**, an
@@ -43,7 +43,7 @@ be no way back. The dump you take on day one is the only one that will exist.
 | [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system and the rule that governs it |
 | [docs/preview/](docs/preview/) | Renders of the shader math — **not screenshots** |
 | [docs/building.md](docs/building.md) | Compiling and emulating with no device |
-| [docs/iode-port.md](docs/iode-port.md) | Base selection, HAL findings, what is and isn't achievable |
+| [docs/base-selection.md](docs/base-selection.md) | Base selection, HAL findings, what is and isn't achievable |
 | [docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md) | GPLv3 obligations if you share a built image |
 | [prebuilts/pastiera/](prebuilts/pastiera/) | The verified Pastiera APK, with provenance |
 

@@ -36,17 +36,17 @@ repo sync -c -j8 --no-clone-bundle --no-tags      # ~100 GB, takes a while
 ```
 
 Match the branch to the Android version the device actually ships; see
-`iode-port.md` on why an older system image on a newer vendor is the
+`base-selection.md` on why an older system image on a newer vendor is the
 unsupported direction.
 
 ## Apply the Facet patches
 
 ```bash
 cd frameworks/base
-git apply --check /path/to/titan2e-iode/patches/systemui/0001-facet-specular-edge.patch
-git apply         /path/to/titan2e-iode/patches/systemui/0001-facet-specular-edge.patch
-git apply --check /path/to/titan2e-iode/patches/systemui/0002-facet-edge-refraction.patch
-git apply         /path/to/titan2e-iode/patches/systemui/0002-facet-edge-refraction.patch
+git apply --check /path/to/titan2e-eos/patches/systemui/0001-facet-specular-edge.patch
+git apply         /path/to/titan2e-eos/patches/systemui/0001-facet-specular-edge.patch
+git apply --check /path/to/titan2e-eos/patches/systemui/0002-facet-rim-darkening.patch
+git apply         /path/to/titan2e-eos/patches/systemui/0002-facet-rim-darkening.patch
 cd ../..
 ```
 
