@@ -10,9 +10,26 @@ Android source tree**.
 type error. So merely constructing both shaders proves the AGSL is valid — which
 is otherwise only discovered part-way through a full ROM build.
 
-The shaders' *math* was verified by rendering it (`docs/preview/`). Their
-*syntax* has never been through a compiler. This closes that gap for the price of
-Android Studio and one emulator image.
+The shaders' *math* was verified by rendering it (`docs/preview/`). Their syntax
+now passes Skia's SkSL compiler offline, which covers most of the risk; this app
+confirms it against Android's own AGSL implementation.
+
+## Two levels of check
+
+**Offline, no SDK or device** — Skia's SkSL compiler will reject most of what
+Android would:
+
+```bash
+pip install skia-python        # needs libegl1 libgl1 on Linux
+python3 tools/shader-check/validate-sksl.py
+```
+
+Both shaders **currently pass** this. SkSL and AGSL are close but not identical,
+and the Skia build here is not the one in any given Android release, so treat a
+pass as strong evidence rather than proof.
+
+**On device** — the app below, which runs the real Android AGSL compiler. This
+is the one that settles it.
 
 ## Running it
 
