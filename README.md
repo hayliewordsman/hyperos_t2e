@@ -42,6 +42,7 @@ be no way back. The dump you take on day one is the only one that will exist.
 | [patches/systemui/](patches/systemui/) | Facet SystemUI source patches (Tier 3) |
 | [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system and the rule that governs it |
 | [docs/preview/](docs/preview/) | Renders of the shader math — **not screenshots** |
+| [docs/security-posture.md](docs/security-posture.md) | BFU forensic resistance: what protects you, what does not, and the hardening props |
 | [docs/building.md](docs/building.md) | Compiling and emulating with no device |
 | [docs/base-selection.md](docs/base-selection.md) | Base selection, HAL findings, what is and isn't achievable |
 | [docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md) | GPLv3 obligations if you share a built image |
@@ -84,6 +85,7 @@ against 0.0000 at the centre. See [docs/preview/](docs/preview/).
 - [ ] **Compile something.** Nothing here has been built; that is the largest untested surface
 - [ ] Device arrives → `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
+- [ ] Apply the ADB hardening props (`ro.adb.secure=1`, `ro.debuggable=0`) and verify on device
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
 
 ## Worth considering before you flash
