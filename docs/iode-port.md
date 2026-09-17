@@ -154,3 +154,52 @@ committing to any GSI.
   **device**, not by the GSI. It cannot be settled until the hardware exists.
   Without it, translucency renders flat and a glass treatment loses most of its
   effect.
+
+## Base reconsidered: /e/OS ships an Android 16 GSI
+
+The Android 14 problem above has a straightforward answer. **/e/OS publishes GSIs
+for Android 14, 15 and 16**, verified directly on SourceForge:
+
+```
+/e/OS/files/GSI/16/  ->  v4.3-a16-20260821-microG-gsi.img.xz
+```
+
+/e/OS is LineageOS-derived and de-Googled with microG, so it is the same
+architectural family as iodé — but current, where iodé is two Android versions
+behind. For a 2026 device this is the right way round for Treble.
+
+### Why the obvious names are not options here
+
+This project needs a **GSI**, because no device tree exists for the Titan 2
+Elite. That rules out the two ROMs people usually reach for first:
+
+- **GrapheneOS** — Pixel-only. Its security model depends on verified boot with
+  user-supplied keys, which needs specific hardware support. It does not ship a
+  GSI and is unlikely to.
+- **CalyxOS** — device-specific builds only (Pixel, Fairphone, some Motorola).
+  No GSI.
+
+Both are strong projects; neither is applicable without a device port.
+
+### The tradeoff worth understanding
+
+/e/OS gives a **privacy** stack — de-Googled, microG, no telemetry. It does not
+give a **hardening** stack: no hardened memory allocator, no extra exploit
+mitigations, no hardened WebView. That class of work is what GrapheneOS does, and
+it is tied to Pixel hardware.
+
+No GSI-shipping ROM offers GrapheneOS-level hardening. If hardening rather than
+de-Googling is the goal, the honest answer is that this device cannot deliver it.
+
+### Candidates, ranked for this project
+
+| ROM | GSI | Android | Verdict |
+|---|---|---|---|
+| **/e/OS** | yes | **16** | best fit — current, privacy stack, right Treble direction |
+| iodéOS | yes | 14 | same family, two versions behind |
+| LineageOS + microG | yes | trails | check current branch before choosing |
+| GrapheneOS | no | — | Pixel-only, not applicable |
+| CalyxOS | no | — | device-specific, not applicable |
+
+The Facet overlay is unaffected by this choice: every resource it overrides is
+upstream LineageOS SystemUI, which all of these share.
