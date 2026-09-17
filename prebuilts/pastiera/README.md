@@ -29,25 +29,39 @@ This repository is public, so committing this binary **conveys** it under GPLv3
 
 | | |
 |---|---|
-| Source repository | `https://github.com/palsoftware/pastiera` |
-| Tag | `nightly/v0.86-nightly.20260820.222455` |
+| Source repository | `https://github.com/hayliewordsman/pastiera` (mirror under our control) |
+| Upstream | `https://github.com/palsoftware/pastiera` |
 | Commit | `138b67161e6a8c14c6723088cc933e97d4d021f0` |
+| Upstream tag | `nightly/v0.86-nightly.20260820.222455` |
 
 ```bash
-git clone https://github.com/palsoftware/pastiera
+git clone https://github.com/hayliewordsman/pastiera
 git -C pastiera checkout 138b67161e6a8c14c6723088cc933e97d4d021f0
 ```
+
+Verified: the commit is present in the mirror and is an ancestor of its `main`,
+so it is reachable and the source is preserved independently of upstream.
 
 **Read [`../../docs/DISTRIBUTION-COMPLIANCE.md`](../../docs/DISTRIBUTION-COMPLIANCE.md)** for the
 full obligation, including the Installation Information a User Product requires.
 
-### Make the source pointer durable
+### Source-pointer durability — done, with one soft spot
 
-Pointing at upstream satisfies §6(d) only while the source stays available there.
-The cheapest durable fix is to **fork `palsoftware/pastiera` on GitHub** — a fork
-is a permanent mirror under your own account, costs nothing, and keeps the commit
-above reachable even if upstream moves or disappears. Then update the source
-repository row here to point at your fork.
+The mirror exists and carries the commit, so §6(d) no longer depends on upstream.
+
+One caveat: GitHub's fork dialog ticks **"Copy the default branch only"** by
+default, so the mirror carries `main` and **no tags** (upstream has 44). The
+commit survives only because it is an ancestor of `main`. That is sufficient, but
+it would be lost if `main` were ever rewritten or force-pushed.
+
+Optional hardening, entirely through the GitHub web UI:
+
+1. Open the mirror -> **Releases** -> **Draft a new release**
+2. **Choose a tag** -> type `nightly/v0.86-nightly.20260820.222455` -> *Create new tag on publish*
+3. Set **Target** to the commit `138b67161e6a8c14c6723088cc933e97d4d021f0`
+4. Publish
+
+That pins the commit permanently, independently of the branch.
 
 ### Note
 

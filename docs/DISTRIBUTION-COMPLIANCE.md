@@ -46,15 +46,20 @@ actually convey.
 | | |
 |---|---|
 | Project | Pastiera |
-| Upstream repository | `https://github.com/palsoftware/pastiera` |
-| Tag | `nightly/v0.86-nightly.20260820.222455` |
+| **Source offered by us** | `https://github.com/hayliewordsman/pastiera` |
+| Upstream | `https://github.com/palsoftware/pastiera` |
 | Commit | `138b67161e6a8c14c6723088cc933e97d4d021f0` |
+| Upstream tag | `nightly/v0.86-nightly.20260820.222455` |
 | Licence | GPL-3.0 (`LICENSE` in the repository root) |
 
 ```bash
-git clone https://github.com/palsoftware/pastiera
+git clone https://github.com/hayliewordsman/pastiera
 git -C pastiera checkout 138b67161e6a8c14c6723088cc933e97d4d021f0
 ```
+
+The mirror was verified to contain this commit, reachable from its `main`, so the
+§6(d) offer stands on a repository we control rather than on upstream's
+continued availability.
 
 One caveat on provenance: the tag name matches the APK's version string, but
 nothing here *proves* the upstream binary was built from that commit — it is not
@@ -80,7 +85,7 @@ binary.
 stops satisfying §6, and you are in breach without having changed anything. Host
 your own copy of the source tree next to your image:
 
-- Corresponding Source: `<YOUR URL FOR THE SOURCE ARCHIVE>`
+- Corresponding Source: `https://github.com/hayliewordsman/pastiera` (commit `138b6716`)
 - Kept available for as long as the image is offered, at no charge.
 
 ## 4. Build instructions
@@ -205,7 +210,7 @@ either. **For a public release this is the recommended route by a wide margin.**
 ## 9. Before you publish — checklist
 
 - [ ] §2 matches the APK actually in the image (re-verify the SHA-256)
-- [ ] §3 source archive hosted at a URL you control, and reachable
+- [x] §3 source hosted at a URL you control, and reachable (mirror verified)
 - [ ] §4 exact build command recorded
 - [ ] `THIRD_PARTY_NOTICES.md` and `LICENSE` from Pastiera shipped alongside
 - [ ] `<ANGLE BRACKET>` placeholders all replaced
