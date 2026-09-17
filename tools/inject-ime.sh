@@ -7,6 +7,10 @@
 # --ime-id defaults to Pastiera. The component may be written in the short form
 # (leading dot) or fully qualified; both are accepted.
 #
+# --set-prop KEY=VALUE  edits /system/build.prop inside the image. Repeatable.
+#   Properties are not resources, so an RRO overlay cannot deliver them.
+#   Notably:  --set-prop ro.surface_flinger.supports_background_blur=1
+#
 # Handles Android sparse and raw images. Supports both filesystems GSIs ship:
 #   ext4  - modified in place with debugfs (no mount, no e2fsdroid needed)
 #   erofs - unpacked and repacked, relabelled from plat_file_contexts
@@ -19,6 +23,7 @@ set -euo pipefail
 # Default IME: Pastiera. Override with --ime-id for any other keyboard.
 IME_ID="it.palsoftware.pastiera/.inputmethod.PhysicalKeyboardInputMethodService"
 APP_NAME=
+PROPS=()
 DEFAULT_LABEL="u:object_r:system_file:s0"
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -32,6 +37,9 @@ while [[ $# -gt 0 ]]; do
     --out)   OUT="$2";   shift 2 ;;
     --ime-id) IME_ID="$2"; shift 2 ;;
     --name)   APP_NAME="$2"; shift 2 ;;
+    --set-prop)
+      [[ "$2" == *=* ]] || die "--set-prop expects KEY=VALUE, got: $2"
+      PROPS+=("$2"); shift 2 ;;
     --keep-tree) KEEP_TREE="$2"; shift 2 ;;
     -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
@@ -158,6 +166,26 @@ print(best[1] if best else fallback)
 PY
 }
 
+# Rewrite a prop file, replacing existing keys in place and appending new ones,
+# so ordering and comments survive.
+rewrite_props() {
+  local file="$1"; shift
+  python3 - "$file" "$@" <<'PROPEDIT'
+import sys
+path, assignments = sys.argv[1], sys.argv[2:]
+lines = open(path, encoding='utf-8', errors='replace').read().splitlines()
+for a in assignments:
+    key, _, value = a.partition('=')
+    for i, line in enumerate(lines):
+        if line.startswith(key + '='):
+            lines[i] = key + '=' + value
+            break
+    else:
+        lines.append(key + '=' + value)
+open(path, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
+PROPEDIT
+}
+
 ##############################################################################
 # ext4: modify in place with debugfs
 ##############################################################################
@@ -218,6 +246,27 @@ if [[ "$FS" == ext4 ]]; then
     log "  $devpath  mode ${mode: -4}  $label"
   done
 
+  # Properties, if any. build.prop's own mode and label must be preserved.
+  if (( ${#PROPS[@]} )); then
+    BP="${PREFIX}/build.prop"
+    bp_mode=$(debugfs -R "stat $BP" "$OUT" 2>/dev/null | grep -oE 'Mode:  0[0-7]+' | grep -oE '0[0-7]+$')
+    bp_label=$(debugfs -R "ea_get $BP security.selinux" "$OUT" 2>/dev/null | grep -oE 'u:object_r:[a-z_]+:s0')
+    : "${bp_mode:=0644}"
+    : "${bp_label:=$DEFAULT_LABEL}"
+    debugfs -R "dump $BP $WORK/build.prop" "$OUT" 2>/dev/null
+    [[ -s "$WORK/build.prop" ]] || die "could not read $BP"
+    rewrite_props "$WORK/build.prop" "${PROPS[@]}"
+    {
+      echo "rm $BP"
+      echo "write $WORK/build.prop $BP"
+      echo "sif $BP mode 0100${bp_mode#0}"
+      echo "sif $BP uid 0"
+      echo "sif $BP gid 0"
+      echo "ea_set $BP security.selinux \"${bp_label}\\000\""
+    } >> "$CMDS"
+    for a in "${PROPS[@]}"; do log "  prop $a"; done
+  fi
+
   debugfs -w -f "$CMDS" "$OUT" >"$WORK/debugfs.log" 2>&1 || true
 
   # debugfs leaves the free block/inode accounting stale, so the repair pass
@@ -240,6 +289,13 @@ see $WORK/debugfs.log (rerun with --keep-tree to retain it)"
     debugfs -R "ea_list $dst" "$OUT" 2>/dev/null | grep -q security.selinux \
       || die "injection failed: $dst has no SELinux label"
   done
+  if (( ${#PROPS[@]} )); then
+    debugfs -R "dump ${PREFIX}/build.prop $WORK/check.prop" "$OUT" 2>/dev/null
+    for a in "${PROPS[@]}"; do
+      grep -qxF "$a" "$WORK/check.prop" || die "property did not land: $a"
+    done
+    log "verified: ${#PROPS[@]} propert$( ((${#PROPS[@]}==1)) && echo y || echo ies) set"
+  fi
   log "verified: ${#PAYLOAD[@]} files present, labelled, fsck clean"
 
 ##############################################################################
@@ -267,6 +323,12 @@ else
     install -m "${mode: -4}" "$src" "$ROOT/$rel"
     log "  /system/$rel  mode ${mode: -4}"
   done
+
+  if (( ${#PROPS[@]} )); then
+    [[ -f "$ROOT/build.prop" ]] || die "no build.prop in the extracted tree"
+    rewrite_props "$ROOT/build.prop" "${PROPS[@]}"
+    for a in "${PROPS[@]}"; do log "  prop $a"; done
+  fi
 
   FC="$ROOT/etc/selinux/plat_file_contexts"
   FC_ARG=()

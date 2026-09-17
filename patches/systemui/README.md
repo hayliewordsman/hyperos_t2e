@@ -6,6 +6,9 @@ building a GSI.
 | Patch | What it does |
 |---|---|
 | `0001-facet-specular-edge.patch` | Adds `FacetEdgeShader` (AGSL) and draws a specular highlight along the top of the shade scrim |
+| `0002-facet-edge-refraction.patch` | Adds `FacetRefractionShader` (AGSL) and **chains** it onto the scrim's existing blur |
+
+Apply them in order; `0002` builds on `0001`.
 
 ## Applying
 
@@ -36,11 +39,28 @@ The patch adds:
   and the draw is bounded to `3 × thickness`, since the falloff is already
   transparent beyond that and drawing the full height would waste fill rate.
 
+## What 0002 does, and the trap it avoids
+
+Real glass is thickest where it curves away, so light near the rim is displaced
+further than light through the middle. The shader reproduces that: sampling is
+pushed inward at both vertical edges, falling to nothing across the centre.
+
+**`ScrimView` already applies a `RenderEffect`** — its blur, set in
+`setBlurRadius`. Calling `setRenderEffect` again for the refraction would have
+*discarded the blur entirely*, destroying the effect this whole design depends
+on, and it would have looked like the shader simply "didn't work".
+
+So `0002` composes them with `RenderEffect.createChainEffect(refraction, blur)`.
+That is also the right order physically: light is diffused by the body of the
+glass, then bent as it leaves the curved rim.
+
 ## Verification status
 
-- `git apply --check` **passes** against a pristine `lineage-23.0` tree
-- every symbol introduced is declared or imported (checked explicitly — the
-  import was missing on the first attempt and would not have compiled)
+- both patches `git apply --check` **pass**, in sequence, against a pristine
+  `lineage-23.0` tree
+- every symbol introduced is declared or imported, checked explicitly. On
+  `0001` the import was missing on the first attempt and would not have
+  compiled, despite the diff looking healthy
 
 **Not compiled and not run.** There is no Android SDK or build tree in the
 environment this was written in. Treat it as reviewed-but-unbuilt: expect to fix
