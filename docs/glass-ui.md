@@ -54,17 +54,36 @@ rather than flattening it.
 The hairline is what separates "glass" from "translucent grey". A 1px stroke at
 the panel edge catches light and gives the surface a boundary.
 
-## Hard dependency: `ro.surface_flinger.supports_background_blur`
+## The blur gate, and who actually controls it
 
-If this vendor property is not `1`, SurfaceFlinger does no cross-window blur and
-**every value above degrades to flat translucency**. It is a device property, not
-a GSI one, so it cannot be confirmed until the hardware exists.
+Blur is gated in code, not merely in config. `BlurUtils` in SystemUI requires
+three things at once:
 
-The framework also exposes `config_sf_slowBlur` (default `true`), a quality/cost
-tradeoff worth testing on Mali-G615 once the device is in hand.
+1. `CROSS_WINDOW_BLUR_SUPPORTED` — a constant that reflects the system property
+   `ro.surface_flinger.supports_background_blur`
+2. `ActivityManager.isHighEndGfx()` — fails on low-RAM/low-graphics devices
+3. a runtime toggle, which battery saver and the developer "disable blurs"
+   option both switch off
 
-`collect-device-info.sh` captures `getprop`; check for the blur property before
-investing in the overlay.
+**Correction to an earlier assumption in this repo.** That property was described
+as vendor-side and therefore unknowable without the device. That is wrong:
+`/system/bin/surfaceflinger` ships **inside the GSI**, so the compositor that
+performs the blur comes from the system image, and the property can be set in
+the GSI's own `/system/build.prop`.
+
+The iodé GSI sets no `ro.surface_flinger.*` property at all, and
+`/system/build.prop` is the only prop file present (`prop.default`,
+`system_ext/build.prop` and `product/build.prop` are all absent), so that is the
+single injection point.
+
+What the device still controls is the **GPU driver**. Setting the property makes
+SurfaceFlinger attempt blur; whether it renders correctly and at acceptable cost
+on Mali-G615 is a performance question to measure, not a permission the device
+grants. That is a much better position than waiting to find out.
+
+Note that a property cannot be delivered by an RRO — resources and properties are
+different mechanisms. Setting it means editing `/system/build.prop` inside the
+image, which is the same class of operation `inject-ime.sh` already performs.
 
 ## Build
 
