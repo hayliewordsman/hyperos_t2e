@@ -297,3 +297,44 @@ same class) whenever it is available.
 Note that the image now embeds a GPLv3 application. Flashing it to your own
 phone is not distribution and triggers nothing; sharing the image would oblige
 you to provide Pastiera's corresponding source and installation information.
+
+## Titan 2 Elite firmware: not publicly available
+
+Searched for a stock firmware image to use as a donor for camera, fingerprint,
+VoLTE and Widevine work. It does not appear to exist publicly.
+
+| Source | Outcome |
+|---|---|
+| `lichtmetzger.de` firmware archive | **Standard Titan 2 only.** No mention of the Elite or the Dimensity 7400 |
+| `unihertz.com` | No firmware downloads at all; users are directed to OTA (`Settings > About Phone > System Update`). Elite appears only in MWC announcement posts |
+| Unihertz official Google Drive | Referenced second-hand, no URL found; reportedly prunes older builds |
+| `firmwarebd.com` | **SEO filler.** Shows a plausible filename but carries no download link whatsoever |
+| `needrom.com` | Unreachable, and standard Titan 2 regardless |
+
+Two cautions. Titan 2 and Titan 2 Elite are **different SoCs** — Helio-class
+versus Dimensity 7400 — so standard Titan 2 firmware is not a valid donor and
+would actively mislead. And firmware aggregator sites are a poor provenance for
+vendor blobs, which run at high privilege; a repackaged or modified HAL is a real
+risk, not a theoretical one.
+
+### Better route: pull it from the device
+
+Now that the bootloader unlocks, the device itself is a better source than any
+download — authentic, current, and exactly the right build. Most of what is
+needed needs **no root**, because the relevant parts of `/system` and `/vendor`
+are world-readable:
+
+```bash
+tools/collect-device-info.sh
+```
+
+This gathers HAL manifests, build properties, telephony/IMS layout, DRM and
+fingerprint state, camera configuration, package lists, and pulls any IMS APKs
+and MediaTek telephony jars it finds, then tars the result. Root is used if
+present and skipped cleanly if not.
+
+The single most valuable file is `vintf/vendor-manifest.xml`: it names the real
+HAL versions and settles the fingerprint AIDL-versus-HIDL question immediately.
+
+Note: this script has not been run against hardware — there is no device in this
+environment. Expect to adjust paths once real output exists.
