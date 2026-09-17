@@ -11,6 +11,7 @@ so the design can be checked before spending a build cycle on it.
 | `facet-panel.png` | Composed panel: blur → tint → refraction → edge highlight |
 | `facet-refraction-negative.png` | Evidence that the refraction does nothing (see below) |
 | `facet-rim-comparison.png` | Control vs chromatic rim vs rim darkening |
+| `facet-rim-effect.png` | The shipped `FacetRimShader`: without (top) and with (bottom) |
 
 ## What these renders caught
 
@@ -37,5 +38,7 @@ at its vertical edges.
 That rules out refraction and chromatic aberration, and points at rim darkening,
 the top edge highlight, and tint as the tools that actually do the work.
 
-This is why `patches/systemui/0002` should not be built as it stands: it costs
-GPU time for no visible result.
+`patches/systemui/0002` was rewritten around this. It now darkens the rim instead
+of refracting it, measured at **0.154 mean change at the rim and 0.0000 at the
+centre** — localised exactly where intended, where the refraction changed nothing
+anywhere.

@@ -6,7 +6,7 @@ building a GSI.
 | Patch | What it does |
 |---|---|
 | `0001-facet-specular-edge.patch` | Adds `FacetEdgeShader` (AGSL) and draws a specular highlight along the top of the shade scrim |
-| `0002-facet-edge-refraction.patch` | ⚠️ **Do not build as-is — proven ineffective.** See below |
+| `0002-facet-rim-darkening.patch` | Adds `FacetRimShader` (AGSL) and **chains** it onto the scrim's existing blur |
 
 Apply them in order; `0002` builds on `0001`.
 
@@ -39,34 +39,33 @@ The patch adds:
   and the draw is bounded to `3 × thickness`, since the falloff is already
   transparent beyond that and drawing the full height would waste fill rate.
 
-## ⚠️ 0002 does not work
+## What 0002 does
 
-Rendering the shader math before building (see `docs/preview/`) showed the
-refraction is **invisible**: at 18px, at 90px, and with the order reversed, the
-result is indistinguishable from blur alone. A 24px blur kernel is wider than
-the displacement gradient, so sample-shifting vanishes into it.
+A pane of glass is optically thicker where it curves away, so it absorbs more
+light at the rim than through the middle. `FacetRimShader` reproduces that,
+darkening toward both vertical edges and leaving the centre untouched. The panel
+gains a defined boundary without a border being drawn on it.
 
-Chromatic separation at the rim fails identically. **Rim darkening works**,
-because it modifies values rather than displacing samples.
+**This replaced an earlier refraction shader**, which displaced sampling at the
+rim. Rendering the math showed it was invisible: the scrim's blur kernel is
+wider than the displacement gradient, so shifting samples changes nothing once
+the content behind is diffused — at 18px, at 90px, and with the order reversed.
+Chromatic separation at the rim failed identically.
 
-The patch is kept for its `createChainEffect` plumbing, which is correct and
-reusable, but the shader it chains should be replaced with a value-modifying rim
-treatment before anyone spends a build on it.
+> On a blurred surface, effects that **displace samples** are invisible. Only
+> effects that **modify values** survive.
 
-## What 0002 does, and the trap it avoids
+Measured on the replacement: mean change **0.154 at the rim, 0.0000 at the
+centre**. See `docs/preview/facet-rim-effect.png`.
 
-Real glass is thickest where it curves away, so light near the rim is displaced
-further than light through the middle. The shader reproduces that: sampling is
-pushed inward at both vertical edges, falling to nothing across the centre.
+## The trap 0002 avoids
 
-**`ScrimView` already applies a `RenderEffect`** — its blur, set in
-`setBlurRadius`. Calling `setRenderEffect` again for the refraction would have
-*discarded the blur entirely*, destroying the effect this whole design depends
-on, and it would have looked like the shader simply "didn't work".
-
-So `0002` composes them with `RenderEffect.createChainEffect(refraction, blur)`.
-That is also the right order physically: light is diffused by the body of the
-glass, then bent as it leaves the curved rim.
+`ScrimView` already applies a `RenderEffect` — its blur, set in `setBlurRadius`.
+Calling `setRenderEffect` again would have *discarded the blur entirely*,
+destroying what the design depends on while presenting as "the shader doesn't
+work". `0002` composes them with `RenderEffect.createChainEffect(rim, blur)`,
+which is also correct physically: diffused by the body of the glass, then
+absorbed by the thicker rim.
 
 ## Verification status
 

@@ -16,7 +16,7 @@ built and verified against images and source, not a running device.
 | `build.prop` editing | **Working** — sets the blur property inside the image |
 | Facet overlay (Tier 2) | Written; every overridden resource verified to exist upstream |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
-| Facet patch `0002` (refraction) | ⚠️ **Proven ineffective** — see below |
+| Facet patch `0002` (rim darkening) | Applies cleanly, effect measured; **never compiled** |
 | Build + emulator guide | Written |
 
 ## Read first when the hardware arrives
@@ -74,7 +74,6 @@ build. See [docs/preview/](docs/preview/).
 ## Open items
 
 - [ ] **Compile something.** Nothing here has been built; that is the largest untested surface
-- [ ] Replace `0002` with a value-modifying rim treatment (rim darkening renders well)
 - [ ] Device arrives → `collect-device-info.sh` on **stock**, before anything else
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
