@@ -7,6 +7,7 @@ building a GSI.
 |---|---|
 | `0001-facet-specular-edge.patch` | Adds `FacetEdgeShader` (AGSL) and draws a specular highlight along the top of the shade scrim |
 | `0002-facet-rim-darkening.patch` | Adds `FacetRimShader` (AGSL) and **chains** it onto the scrim's existing blur |
+| `0003-facet-status-bar-icon-modes.patch` | Four modes for notification icons in the status bar, selected by a resource |
 
 Apply them in order; `0002` builds on `0001`.
 
@@ -69,9 +70,34 @@ work". `0002` composes them with `RenderEffect.createChainEffect(rim, blur)`,
 which is also correct physically: diffused by the body of the glass, then
 absorbed by the thicker rim.
 
+## What 0003 does
+
+Adds an integer resource controlling what reaches the status bar:
+
+| Mode | Behaviour |
+|---|---|
+| 0 | all icons — stock Android |
+| 1 | alerting only, hiding silent and ambient notifications |
+| **2** | **a single icon, the most recent notification — the default** |
+| 3 | hidden entirely |
+
+The filtering happens in `NotificationIconContainerStatusBarViewModel` before the
+icons are mapped, so the limit applies to what survives rather than to the
+unfiltered set. Mode 2 sorts by `whenTime` first, because the source is a `Set`
+and `take(1)` on an unordered collection would pick an arbitrary notification.
+
+**Mode 2 is a single icon, not a neutral dot.** It shows the most recent
+notification's own icon. A true neutral dot means substituting the drawable,
+which is a substantially larger change than filtering a flow, and was not
+attempted here.
+
+Because the mode is a resource, `overlay/` carries it too — so once this patch is
+built in, the mode can be changed by replacing the overlay rather than rebuilding
+the ROM. On a build without 0003 the overlay entry is simply unused.
+
 ## Verification status
 
-- both patches `git apply --check` **pass**, in sequence, against a pristine
+- all three patches `git apply --check` **pass**, in sequence, against a pristine
   `lineage-23.0` tree
 - every symbol introduced is declared or imported, checked explicitly. On
   `0001` the import was missing on the first attempt and would not have

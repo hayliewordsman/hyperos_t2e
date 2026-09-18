@@ -24,6 +24,7 @@ built and verified against images and source, not a running device.
 | Facet overlay (Tier 2) | **Built and injected** — 11 + 1 resources, verified in-image; enablement untested on device |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
 | Facet patch `0002` (rim darkening) | Applies cleanly, effect measured; **never compiled** |
+| Facet patch `0003` (status bar icon modes) | Applies cleanly; **never compiled** |
 | Build + emulator guide | Written |
 
 ## Read first when the hardware arrives

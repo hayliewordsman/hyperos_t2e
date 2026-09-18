@@ -1,0 +1,78 @@
+diff --git a/packages/SystemUI/res/values/config.xml b/packages/SystemUI/res/values/config.xml
+index 460ddd914..902367351 100644
+--- a/packages/SystemUI/res/values/config.xml
++++ b/packages/SystemUI/res/values/config.xml
+@@ -20,6 +20,15 @@
+ <!-- These resources are around just to allow their values to be customized
+      for different hardware and product builds. -->
+ <resources>
++
++    <!-- Facet: how notification icons appear in the status bar.
++         0 = all icons (stock Android behaviour)
++         1 = alerting only, hiding silent and ambient notifications
++         2 = a single icon, the most recent notification only
++         3 = hidden entirely
++         Overridable by an RRO, so the mode can be changed without rebuilding. -->
++    <integer name="facet_status_bar_notification_icon_mode">2</integer>
++
+     <!-- Component to be used as the recents implementation.  Must implement the
+      RecentsImplementation interface.  This name is in the ComponentName flattened format
+      (package/class)  -->
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/notification/icon/ui/viewmodel/NotificationIconContainerStatusBarViewModel.kt b/packages/SystemUI/src/com/android/systemui/statusbar/notification/icon/ui/viewmodel/NotificationIconContainerStatusBarViewModel.kt
+index 8f43c323a..a547ede97 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/notification/icon/ui/viewmodel/NotificationIconContainerStatusBarViewModel.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/notification/icon/ui/viewmodel/NotificationIconContainerStatusBarViewModel.kt
+@@ -44,6 +44,15 @@ import kotlinx.coroutines.flow.flowOf
+ import kotlinx.coroutines.flow.flowOn
+ import kotlinx.coroutines.flow.map
+ 
++// Facet status bar icon modes. Mode 0, every icon as stock Android shows them,
++// is the `else` branch below and needs no constant.
++/** Facet: show only alerting notifications, hiding silent and ambient ones. */
++private const val FACET_ICONS_ALERTING = 1
++/** Facet: show a single icon for the most recent notification. */
++private const val FACET_ICONS_SINGLE = 2
++/** Facet: show no notification icons at all. */
++private const val FACET_ICONS_HIDDEN = 3
++
+ /** View-model for the row of notification icons displayed in the status bar, */
+ class NotificationIconContainerStatusBarViewModel
+ @Inject
+@@ -59,6 +68,13 @@ constructor(
+ 
+     private val maxIcons = resources.getInteger(R.integer.max_notif_static_icons)
+ 
++    /**
++     * Facet: which notification icons reach the status bar. Read once, since the
++     * resource is fixed for the life of the process; changing it takes a restart.
++     */
++    private val facetIconMode =
++        resources.getInteger(R.integer.facet_status_bar_notification_icon_mode)
++
+     /** Are changes to the icon container animated? */
+     val animationsEnabled: Flow<Boolean> =
+         combine(shadeInteractor.isShadeTouchable, keyguardInteractor.isKeyguardShowing) {
+@@ -84,9 +100,21 @@ constructor(
+     val icons: Flow<NotificationIconsViewData> =
+         iconsInteractor.statusBarNotifs
+             .map { entries ->
++                // Facet: filter before mapping, so the limit below applies to what
++                // actually survives rather than to the unfiltered set.
++                val selected =
++                    when (facetIconMode) {
++                        FACET_ICONS_ALERTING -> entries.filter { !it.isSilent && !it.isAmbient }
++                        // Sorted, because the source is a Set and take() on an
++                        // unordered collection would pick an arbitrary notification.
++                        FACET_ICONS_SINGLE -> entries.sortedByDescending { it.whenTime }.take(1)
++                        FACET_ICONS_HIDDEN -> emptyList()
++                        // Mode 0, and any unrecognised value: stock behaviour.
++                        else -> entries.toList()
++                    }
+                 NotificationIconsViewData(
+-                    visibleIcons = entries.mapNotNull { it.toIconInfo(it.statusBarIcon) },
+-                    iconLimit = maxIcons,
++                    visibleIcons = selected.mapNotNull { it.toIconInfo(it.statusBarIcon) },
++                    iconLimit = if (facetIconMode == FACET_ICONS_SINGLE) 1 else maxIcons,
+                 )
+             }
+             .flowOn(bgContext)

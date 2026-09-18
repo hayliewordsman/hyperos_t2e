@@ -5,8 +5,10 @@ set -euo pipefail
 : "${ANDROID_JAR:?set ANDROID_JAR to a platform android.jar, e.g. \$ANDROID_HOME/platforms/android-35/android.jar}"
 : "${KEYSTORE:?set KEYSTORE to a signing keystore}"
 : "${KEYSTORE_PASS:?set KEYSTORE_PASS to the keystore password}"
-OUT="${OUT:-$(pwd)/out}"; mkdir -p "$OUT"
+# cd first: OUT must resolve against this script's directory, not the caller's,
+# or running it from the repo root silently writes output somewhere else.
 cd "$(dirname "$0")"
+OUT="${OUT:-$(pwd)/out}"; mkdir -p "$OUT"
 
 for ov in FacetSystemUI FacetFramework; do
   echo "[*] $ov"
