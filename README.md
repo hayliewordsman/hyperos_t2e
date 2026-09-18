@@ -22,10 +22,10 @@ built and verified against images and source, not a running device.
 | `build.prop` editing | **Working** — blur + ADB hardening props, verified in-image on /e/OS |
 | Camera / fingerprint / VoLTE / Widevine | Re-measured on /e/OS: **VoLTE's structural blocker is gone**, camera improved, fingerprint lower-risk, Widevine unchanged — [details](docs/base-selection.md) |
 | Security posture | Reviewed: the GSI ships `ro.adb.secure=0`; hardening applied, **unverified on device** |
-| Facet overlay (Tier 2) | **Built and injected** — 11 + 1 resources, verified in-image; enablement untested on device |
+| Facet overlay (Tier 2) | **Built and injected** — 12 + 1 resources, verified in-image; enablement untested on device |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
 | Facet patch `0002` (rim darkening) | Applies cleanly, effect measured; **never compiled** |
-| Facet patch `0003` (status bar icon modes) | Applies cleanly; **never compiled** |
+| Facet patch `0003` (status bar icons) | Four modes — all / alerting only / **neutral dot (default)** / hidden. Applies cleanly; **never compiled** |
 | Build + emulator guide | Written |
 
 ## Read first when the hardware arrives
@@ -114,6 +114,7 @@ against 0.0000 at the centre. See [docs/preview/](docs/preview/).
 - [ ] Full partition backup before unlocking (unlocking wipes user data)
 - [x] Apply the ADB hardening props — done, each verified present exactly once in the image
 - [ ] Confirm the hardening **on device**: if ADB attaches from an unauthorised host without prompting, it did not take effect
+- [ ] Confirm the overlays actually take effect — `isStatic` is deprecated, so they may need `cmd overlay enable`
 - [ ] Fill the remaining placeholders in the compliance doc before any public release
 
 ## Worth considering before you flash
