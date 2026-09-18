@@ -41,6 +41,7 @@ be no way back. The dump you take on day one is the only one that will exist.
 | [tools/collect-device-info.sh](tools/collect-device-info.sh) | Pulls HAL, telephony, DRM and fingerprint state off the device over adb. **Untested against hardware** |
 | [tools/shader-check/](tools/shader-check/) | ~20 MB Android app that compiles the Facet AGSL, for validating the shaders without a 300 GB tree |
 | [overlay/](overlay/) | Facet RRO overlay sources (Tier 2) and a build script |
+| [overlay/prebuilt/](overlay/prebuilt/) | The two overlays **built and signed**, so Tier 2 needs no Android SDK |
 | [patches/systemui/](patches/systemui/) | Facet SystemUI source patches (Tier 3) |
 | [docs/glass-ui.md](docs/glass-ui.md) | The Facet design system and the rule that governs it |
 | [docs/preview/](docs/preview/) | Renders of the shader math — **not screenshots** |
@@ -50,7 +51,29 @@ be no way back. The dump you take on day one is the only one that will exist.
 | [docs/DISTRIBUTION-COMPLIANCE.md](docs/DISTRIBUTION-COMPLIANCE.md) | GPLv3 obligations if you share a built image |
 | [prebuilts/pastiera/](prebuilts/pastiera/) | The verified Pastiera APK, with provenance |
 
-## Quick start
+## Quick start — Tier 2, no source build
+
+Produces a complete image from the prebuilt /e/OS GSI: Pastiera, blur, ADB
+hardening and Facet's resource layer. Runs in seconds.
+
+```bash
+tools/inject-ime.sh \
+  --image  v4.3-a16-20260821-microG-gsi.img \
+  --apk    prebuilts/pastiera/pastiera-nightly-0.86-nightly.20260820.222455.apk \
+  --out    eos-facet-tier2.img \
+  --name   Pastiera \
+  --ime-id it.palsoftware.pastiera.nightly/it.palsoftware.pastiera.inputmethod.PhysicalKeyboardInputMethodService \
+  --add-file overlay/prebuilt/FacetSystemUI.apk:product/overlay/FacetSystemUI.apk \
+  --add-file overlay/prebuilt/FacetFramework.apk:product/overlay/FacetFramework.apk \
+  --set-prop ro.surface_flinger.supports_background_blur=1 \
+  --set-prop ro.adb.secure=1 \
+  --set-prop ro.debuggable=0
+```
+
+The shaders are **not** in this — they are SystemUI source changes and need the
+full build in [docs/building.md](docs/building.md).
+
+## Quick start — prerequisites
 
 ```bash
 apt-get install -y erofs-utils android-sdk-libsparse-utils e2fsprogs python3
