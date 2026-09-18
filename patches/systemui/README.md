@@ -7,7 +7,7 @@ building a GSI.
 |---|---|
 | `0001-facet-specular-edge.patch` | Adds `FacetEdgeShader` (AGSL) and draws a specular highlight along the top of the shade scrim |
 | `0002-facet-rim-darkening.patch` | Adds `FacetRimShader` (AGSL) and **chains** it onto the scrim's existing blur |
-| `0003-facet-status-bar-icon-modes.patch` | Four modes for notification icons in the status bar, selected by a resource |
+| `0003-facet-status-bar-icon-modes.patch` | Four modes for status bar notification icons, including a neutral dot, selected by a resource |
 
 Apply them in order; `0002` builds on `0001`.
 
@@ -78,7 +78,7 @@ Adds an integer resource controlling what reaches the status bar:
 |---|---|
 | 0 | all icons — stock Android |
 | 1 | alerting only, hiding silent and ambient notifications |
-| **2** | **a single icon, the most recent notification — the default** |
+| **2** | **a single neutral dot when anything is pending — the default** |
 | 3 | hidden entirely |
 
 The filtering happens in `NotificationIconContainerStatusBarViewModel` before the
@@ -86,10 +86,15 @@ icons are mapped, so the limit applies to what survives rather than to the
 unfiltered set. Mode 2 sorts by `whenTime` first, because the source is a `Set`
 and `take(1)` on an unordered collection would pick an arbitrary notification.
 
-**Mode 2 is a single icon, not a neutral dot.** It shows the most recent
-notification's own icon. A true neutral dot means substituting the drawable,
-which is a substantially larger change than filtering a flow, and was not
-attempted here.
+Mode 2 is a **true neutral dot**: the notification's own icon is replaced with
+`res/drawable/facet_notification_dot.xml`, a plain circle, so the indicator says
+*something is pending* without identifying which app.
+
+The substitution turned out to be one expression, because `toIconInfo` already
+takes the icon as a parameter rather than reading it from the notification. The
+dot is solid white, so the status bar's existing dark/light tinting applies to it
+exactly as it does to a real icon, and it is built lazily so the drawable is only
+resolved when the mode uses it.
 
 Because the mode is a resource, `overlay/` carries it too — so once this patch is
 built in, the mode can be changed by replacing the overlay rather than rebuilding

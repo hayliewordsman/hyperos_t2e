@@ -3,7 +3,7 @@
     <!-- Facet: how notification icons appear in the status bar.
          0 = all icons (stock Android behaviour)
          1 = alerting only, hiding silent and ambient notifications
-         2 = a single icon, the most recent notification only
+         2 = a single neutral dot when anything is pending
          3 = hidden entirely
 
          This resource only exists on a build carrying
