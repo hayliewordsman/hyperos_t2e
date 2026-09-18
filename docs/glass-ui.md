@@ -81,7 +81,7 @@ as vendor-side and therefore unknowable without the device. That is wrong:
 performs the blur comes from the system image, and the property can be set in
 the GSI's own `/system/build.prop`.
 
-The iodé GSI sets no `ro.surface_flinger.*` property at all, and
+The /e/OS GSI sets no `ro.surface_flinger.supports_background_blur` at all, and
 `/system/build.prop` is the only prop file present (`prop.default`,
 `system_ext/build.prop` and `product/build.prop` are all absent), so that is the
 single injection point.
@@ -106,7 +106,7 @@ overlay/build.sh            # produces FacetSystemUI.apk, FacetFramework.apk
 ```
 
 Then inject with the same mechanism the IME uses, into `/system/product/overlay/`
-— a directory the iodé GSI already populates, so it is a precedented location.
+— a directory the /e/OS GSI already populates, so it is a precedented location.
 
 ## What still needs Tier 3
 
@@ -122,7 +122,7 @@ Still outstanding at this tier:
 
 A source build also **fixes the Android version problem**: LineageOS has branches
 through `lineage-24.0`, so you can target the version the device actually ships
-rather than being stuck on iodé's Android 14 prebuilt.
+rather than being pinned to whatever version a prebuilt happens to be.
 
 Building a GSI needs **no device tree** — GSI targets are generic — but it does
 need roughly 250–400 GB and many CPU-hours, which is why it cannot happen in this

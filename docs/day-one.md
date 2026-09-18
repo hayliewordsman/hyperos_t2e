@@ -62,9 +62,11 @@ Everything below follows from that.
   The nightly's applicationId and its IME class live in *different* namespaces —
   guessing gets you a keyboard that silently never activates.
 
-- **The GSI.** Fetch a current iodéOS GSI from
-  `https://gitlab.iode.tech/ota/release/-/tree/master/gsi`. The tool does not
-  care which GSI you use, only that it is arm64 and matches your A/B layout.
+- **The GSI.** Fetch a current **/e/OS** GSI from
+  `https://sourceforge.net/projects/e-os/files/GSI/`. The tool does not care
+  which GSI you use, only that it is arm64 and matches your A/B layout — but the
+  Android version must be **at least** what the device ships, never older. See
+  `base-selection.md`.
 
 - **Both URLs**, which may have moved. The reproduction recipe in `gsi-port.md`
   has the exact paths that worked.

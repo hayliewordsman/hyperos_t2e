@@ -180,10 +180,10 @@ Licence texts are in `third_party/licenses/` in the Pastiera repository.
 **This covers Pastiera only.** The image also contains everything else in the
 GSI, under its own terms.
 
-With an **iodéOS** base this is comparatively simple: iodéOS is LineageOS-derived
+With an **/e/OS** base this is comparatively simple: /e/OS is LineageOS-derived
 free software, so redistributing a built image is legitimate, provided you carry
 its licences and honour the same GPL source obligations for the components that
-carry them. Check iodé's own licensing and any trademark terms before publishing
+carry them. Check /e/OS's own licensing and any trademark terms before publishing
 under their name.
 
 This was **not** true of the HyperOS base previously considered, which was

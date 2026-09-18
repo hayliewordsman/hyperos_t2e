@@ -8,14 +8,16 @@ Last updated: 2026-09-17
 
 ## Direction
 
-Run **iodéOS** (LineageOS-derived, privacy-focused) on the Titan 2 Elite via its
-**official GSI**, with a physical-keyboard IME bundled as the system default and
-a glass-style UI layer on top.
+Run **/e/OS, Android 16** on the Titan 2 Elite via its **official GSI**, with a
+physical-keyboard IME bundled as the system default and the Facet glass layer on
+top.
 
-This replaces an earlier attempt to use a HyperOS 3 GSI, which was abandoned for
-a concrete reason preserved below.
+Two earlier bases were evaluated and rejected — HyperOS 3 and iodéOS. Both are
+documented under **History** below, because the reasons still constrain the
+work: HyperOS was built for the wrong silicon, and iodé is two Android versions
+behind.
 
-## Why the HyperOS route was dropped
+## History: why HyperOS was dropped
 
 The HyperOS 3 GSI declared its own build inputs in its system VINTF manifest:
 
@@ -36,7 +38,7 @@ change.
 
 | Goal | Status |
 |---|---|
-| iodéOS GSI on the device | **Realistic.** Official GSI, built for arbitrary Treble devices |
+| /e/OS GSI on the device | **Realistic.** Official GSI, built for arbitrary Treble devices |
 | Pastiera bundled as default IME | **Done** — `tools/inject-ime.sh` is ROM-agnostic and works on any GSI |
 | Camera / fingerprint / VoLTE / Widevine | Re-measured on /e/OS — see below. Three of four improved; none verified without the device |
 | Glass UI layer | Partially — see below |
@@ -46,8 +48,9 @@ change.
 
 Two independent blockers.
 
-**Infrastructure.** An iodé/LineageOS tree is roughly 100 GB synced, with another
-150–300 GB for build output and many CPU-hours. This environment has ~21 GB of
+**Infrastructure.** A LineageOS-derived tree needs 150–200 GB synced, because
+`.repo` and the checkout both exist at once, plus 100–200 GB for build output.
+See `building.md` for the full breakdown. This environment has ~21 GB of
 disk, 4 cores and 15 GB RAM. Not a matter of patience.
 
 **Inputs that do not exist.** A device port needs three things for the Titan 2
@@ -98,12 +101,12 @@ These findings are ROM-agnostic and still apply.
 
 ## Next steps
 
-1. Fetch an iodéOS GSI from `https://gitlab.iode.tech/ota/release/-/tree/master/gsi`
+1. Fetch an /e/OS GSI from `https://sourceforge.net/projects/e-os/files/GSI/16/`
    and confirm its filesystem, arch and A/B variant.
 2. Run `tools/inject-ime.sh` against it with the archived Pastiera APK.
 3. Everything else waits on hardware — see `day-one.md`.
 
-## The iodéOS GSI, inspected
+## History: why iodéOS was dropped
 
 `iode-5.27-20260827-arm64_ab.img.xz` — 1,132,205,824 bytes, SHA-256 verified
 against the published checksum (iodé also ships a minisign `.minisig`).
@@ -159,7 +162,7 @@ committing to any GSI.
   Without it, translucency renders flat and a glass treatment loses most of its
   effect.
 
-## Base reconsidered: /e/OS ships an Android 16 GSI
+## The base: /e/OS ships an Android 16 GSI
 
 The Android 14 problem above has a straightforward answer. **/e/OS publishes GSIs
 for Android 14, 15 and 16**, verified directly on SourceForge:
