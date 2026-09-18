@@ -38,7 +38,7 @@ change.
 |---|---|
 | iodéOS GSI on the device | **Realistic.** Official GSI, built for arbitrary Treble devices |
 | Pastiera bundled as default IME | **Done** — `tools/inject-ime.sh` is ROM-agnostic and works on any GSI |
-| Camera / fingerprint / VoLTE / Widevine | **Better odds than HyperOS**, still unverified without the device |
+| Camera / fingerprint / VoLTE / Widevine | Re-measured on /e/OS — see below. Three of four improved; none verified without the device |
 | Glass UI layer | Partially — see below |
 | **Building a complete ROM from source** | **Not achievable.** See below |
 
@@ -297,3 +297,57 @@ which needs root and weakens the posture described in `security-posture.md`.
 **The practical conclusion:** if you are building from source for Facet anyway,
 building /e/OS gets microG already integrated. Building LineageOS and adding it
 is strictly more work for the same result.
+
+
+## The four hardware subsystems, re-measured on /e/OS
+
+The original assessment was made against the **HyperOS** image. Changing base
+invalidated it, so it was re-run against `v4.3-a16-20260821-microG-gsi.img`.
+Three of the four answers changed.
+
+| | HyperOS GSI | /e/OS GSI |
+|---|---|---|
+| **VoLTE** | no IMS component at all; demanded 3 QTI HALs; built from `device/qcom/qssi_64` | **zero** qti/qcom HAL demands; built from `device/phh/treble`; ships `ImsServiceEntitlement`, `CarrierConfig`, `CarrierDefaultApp` |
+| **Camera** | no camera app whatsoever | ships `/system/app/Camera` |
+| **Fingerprint** | HIDL `@2.1` only | HIDL `@2.1`, plus `oplus` and `oppo` vendor shims |
+| **Widevine** | nothing in `/system`; vendor-provided | unchanged |
+
+### VoLTE — the structural blocker is gone
+
+This is the big change. The HyperOS image was compiled from Qualcomm's Single
+System Image target and asked vendor for QTI radio HALs that do not exist on a
+Dimensity 7400. No amount of grafting fixes a framework built against the wrong
+radio. That was the basis for calling VoLTE possibly unwinnable.
+
+The /e/OS manifest demands **no** Qualcomm HALs and is built from
+`device/phh/treble`, which is vendor-neutral by construction.
+
+It is still not solved. `ImsServiceEntitlement` is a provisioning app, not an IMS
+implementation — MediaTek's actual IMS stack lives in the device's own
+`/system`, so grafting from a stock dump is likely still required. But that is
+now *plausible grafting onto a neutral framework* rather than fighting a
+Qualcomm-flavoured one. **Downgraded from "may be unwinnable" to "unverified".**
+
+### Camera — improved
+
+HyperOS shipped no camera application at all, having been stripped of Xiaomi's.
+/e/OS ships one, so basic Camera2 capture against the device's own MediaTek HAL
+is plausible. Multi-lens switching and tuned processing remain vendor-side and
+should not be expected.
+
+### Fingerprint — unchanged observation, lower risk
+
+Only the legacy HIDL `@2.1` interface is visible in `/system/lib64`, as on
+HyperOS. Two caveats in opposite directions: this was a filename search, so it
+does not prove AIDL support is absent; and the image ships `oplus` and `oppo`
+fingerprint shims, which is evidence TrebleDroid actively patches for
+cross-vendor compatibility. Lower risk than before, not eliminated.
+
+### Widevine — unchanged
+
+Nothing Widevine-specific in `/system`, so the vendor provides it and the TEE
+keybox stays. L1 has a real chance. Note again that an unlocked bootloader
+breaks Play Integrity regardless, so HD streaming may refuse even with L1 intact.
+
+**None of this is verified.** `collect-device-info.sh` on the stock ROM answers
+all four properly, and that needs the device.

@@ -20,6 +20,7 @@ built and verified against images and source, not a running device.
 | GSI base | **/e/OS 4.3, Android 16** — downloaded, inspected, adopted |
 | IME injection | **Working**, verified on the real /e/OS image: files labelled, APK byte-identical, `e2fsck` clean |
 | `build.prop` editing | **Working** — blur + ADB hardening props, verified in-image on /e/OS |
+| Camera / fingerprint / VoLTE / Widevine | Re-measured on /e/OS: **VoLTE's structural blocker is gone**, camera improved, fingerprint lower-risk, Widevine unchanged — [details](docs/base-selection.md) |
 | Security posture | Reviewed: the GSI ships `ro.adb.secure=0`; hardening applied, **unverified on device** |
 | Facet overlay (Tier 2) | **Built and injected** — 11 + 1 resources, verified in-image; enablement untested on device |
 | Facet patch `0001` (edge) | Applies cleanly; **never compiled** |
