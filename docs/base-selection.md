@@ -338,10 +338,41 @@ should not be expected.
 ### Fingerprint — unchanged observation, lower risk
 
 Only the legacy HIDL `@2.1` interface is visible in `/system/lib64`, as on
-HyperOS. Two caveats in opposite directions: this was a filename search, so it
-does not prove AIDL support is absent; and the image ships `oplus` and `oppo`
-fingerprint shims, which is evidence TrebleDroid actively patches for
-cross-vendor compatibility. Lower risk than before, not eliminated.
+HyperOS. Two caveats pull in opposite directions.
+
+First, that was a filename search, so it does not prove AIDL support is absent.
+
+Second, the image carries **16 vendor-specific compatibility libraries** in
+`/system/lib64` — `oplus`, `oppo` and others — including fingerprint shims.
+Those come from the phh/TrebleDroid layer described below, which exists to make
+one image work across many vendors' HALs. HyperOS had no such layer. Lower risk
+than before, not eliminated.
+
+### Why TrebleDroid is mentioned when the base is /e/OS
+
+These are not competing bases; they are three layers of the same image:
+
+```
+LineageOS 23          the platform
+  + /e/ changes       microG, App Lounge, de-Googling   -> "/e/OS"
+  + phh/TrebleDroid   the generic device tree that makes it a GSI
+```
+
+Read from the image itself:
+
+```
+ro.build.fingerprint = google/treble_arm64_bmGN/tdgsi_arm64_ab:16/...
+ro.build.product     = tdgsi_arm64_ab          # tdgsi = TrebleDroid GSI
+# from device/phh/treble/system.prop           # in build.prop
+manifest built from: device/phh/treble/framework_manifest
+```
+
+A device-specific /e/OS build, for a Fairphone or a Pixel, has no such layer. But
+no Titan 2 Elite device tree exists, so the GSI is the only route, and a GSI must
+be built against *some* generic target. phh/TrebleDroid is the one /e/OS uses.
+
+Worth noting that `phh-securize.sh` and `PhhTrebleApp` are **absent**: /e/OS uses
+phh's device tree to build, but strips the user-facing Treble tooling.
 
 ### Widevine — unchanged
 
