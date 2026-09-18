@@ -15,12 +15,32 @@ emulator -writable-system
 
 Build the GSI only once the look is settled and you want it on the phone.
 
+## Where the disk goes
+
+The full build is genuinely large, and exhausting the disk at 90% after several
+hours is the worst outcome. Roughly:
+
+| | |
+|---|---|
+| `.repo/` — git objects for ~600 projects | 80–120 GB |
+| the working tree checked out from them | 60–90 GB |
+| **`repo sync` total** | **150–200 GB** |
+| `out/` — intermediates, symbols, images | 100–200 GB |
+| ccache, if enabled | +20–50 GB |
+| **Total** | **250–400 GB** |
+
+The part people underestimate is that `.repo` and the checkout both exist at
+once: the source content is stored twice, compressed in git objects and again as
+files on disk. `-c --no-tags` trims the history fetched, not that duplication.
+
+These are standard figures for an Android tree of this era rather than something
+measured here — no build has been run in the environment these notes were written
+in.
+
 ## If you do not have 250-400 GB
 
-The full build is genuinely large, and running out of disk at 90% after several
-hours is the worst outcome. Around **130 GB is not enough**: the source alone is
-60-80 GB even with `-c --no-tags`, and `out/` for a full emulator build adds
-80-120 GB.
+**The sync alone exceeds 130 GB**, so a build would fail before it started
+compiling — which at least fails early rather than after hours.
 
 Three ways round it, cheapest first:
 
